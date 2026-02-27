@@ -10,22 +10,7 @@ import {
   MinLength,
   MaxLength,
 } from 'class-validator';
-
-/**
- * Enum des types de cuisine — partagé entre DTO, entité et Swagger.
- */
-export enum Cuisine {
-  FRANCAISE = 'française',
-  ITALIENNE = 'italienne',
-  JAPONAISE = 'japonaise',
-  CHINOISE = 'chinoise',
-  INDIENNE = 'indienne',
-  MEXICAINE = 'mexicaine',
-  AMERICAINE = 'américaine',
-  THAILANDAISE = 'thaïlandaise',
-  LIBANAISE = 'libanaise',
-  AUTRE = 'autre',
-}
+import { Cuisine } from '../enums/cuisine.enum';
 
 /**
  * DTO de création d'un restaurant.

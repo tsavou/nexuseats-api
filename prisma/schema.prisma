@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CuisineType {
+  FRANCAISE
+  ITALIENNE
+  JAPONAISE
+  CHINOISE
+  INDIENNE
+  MEXICAINE
+  AMERICAINE
+  THAILANDAISE
+  LIBANAISE
+  AUTRE
+}
+
+model Restaurant {
+  id           String      @id @default(uuid())
+  name         String
+  cuisineType  CuisineType @map("cuisine")
+  address      String
+  rating       Float       @default(0)
+  averagePrice Float       @map("average_price")
+  phoneNumber  String?     @map("phone_number")
+  countryCode  String?     @map("country_code")
+  localNumber  String?     @map("local_number")
+  description  String?
+  isOpen       Boolean     @default(true) @map("is_open")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  deletedAt    DateTime?   @map("deleted_at")
+  menus        Menu[]
+
+  @@index([cuisineType], map: "idx_restaurants_cuisine")
+  @@index([rating], map: "idx_restaurants_rating")
+  @@map("restaurants")
+}
+
+model Menu {
+  id           String     @id @default(uuid())
+  name         String
+  description  String?
+  restaurantId String     @map("restaurant_id")
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items        MenuItem[]
+
+  @@index([restaurantId], map: "idx_menus_restaurant_id")
+  @@map("menus")
+}
+
+model MenuItem {
+  id         String     @id @default(uuid())
+  name       String
+  price      Decimal    @db.Decimal(10, 2)
+  available  Boolean    @default(true)
+  menuId     String     @map("menu_id")
+  menu       Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  categories Category[]
+
+  @@index([menuId], map: "idx_menu_items_menu_id")
+  @@map("menu_items")
+}
+
+model Category {
+  id    String     @id @default(uuid())
+  name  String     @unique
+  items MenuItem[]
+
+  @@map("categories")
+}

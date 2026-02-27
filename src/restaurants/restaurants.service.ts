@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateRestaurantDto, Cuisine } from './dto/create-restaurant-v1.dto';
+import { CreateRestaurantDto } from './dto/create-restaurant-v1.dto';
 import { randomUUID } from 'crypto';
 import { Restaurant } from './entities/restaurant.entity';
 import { CreateRestaurantV2Dto } from './dto/create-restaurant-v2.dto';
+import { Cuisine } from './enums/cuisine.enum';
 
 @Injectable()    // ← Dit à NestJS : "je suis injectable via DI"
 export class RestaurantsService {

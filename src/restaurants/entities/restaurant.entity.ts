@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Cuisine } from '../dto/create-restaurant-v1.dto';
+import { Cuisine } from '../enums/cuisine.enum';
 /**
  * Entité Restaurant — définit le schéma de réponse Swagger.
  *
@@ -51,13 +51,13 @@ export class Restaurant {
  })
  phoneNumber?: string;
 
- @ApiProperty({
+ @ApiPropertyOptional({
  description: 'Code pays',
  example: '+33',
  })
  countryCode?: string;
 
- @ApiProperty({
+ @ApiPropertyOptional({
  description: 'Numéro local',
  example: '123456789',
  })

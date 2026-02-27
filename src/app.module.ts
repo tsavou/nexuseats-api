@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './prisma/prisma.module';
 
 
 @Module({
@@ -13,6 +14,7 @@ import { ConfigModule } from '@nestjs/config';
     }),
 
     RestaurantsModule,
+    PrismaModule,
     // OrdersModule,           // Sprint 3
     // AuthModule,             // Sprint 4
   ],
