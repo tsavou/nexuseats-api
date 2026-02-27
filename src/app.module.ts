@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
+import { MenusModule } from './menus/menus.module';
+import { MenuItemsModule } from './menu-items/menu-items.module';
 
 
 @Module({
@@ -14,6 +16,8 @@ import { PrismaModule } from './prisma/prisma.module';
     }),
 
     RestaurantsModule,
+    MenusModule,
+    MenuItemsModule,
     PrismaModule,
     // OrdersModule,           // Sprint 3
     // AuthModule,             // Sprint 4

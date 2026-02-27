@@ -10,7 +10,7 @@ import {
   MinLength,
   MaxLength,
 } from 'class-validator';
-import { Cuisine } from '../enums/cuisine.enum';
+import { CuisineType } from '@prisma/client';
 
 /**
  * DTO de création d'un restaurant.
@@ -49,13 +49,13 @@ export class CreateRestaurantDto {
 
   @ApiProperty({
     description: 'Type de cuisine proposée',
-    enum: Cuisine,
-    example: Cuisine.ITALIENNE,
+    enum: CuisineType,
+    example: CuisineType.ITALIENNE,
   })
-  @IsEnum(Cuisine, {
-    message: `Type de cuisine invalide. Valeurs : ${Object.values(Cuisine).join(', ')}`,
+  @IsEnum(CuisineType, {
+    message: `Type de cuisine invalide. Valeurs : ${Object.values(CuisineType).join(', ')}`,
   })
-  cuisineType: Cuisine;
+  cuisineType: CuisineType;
 
   @ApiPropertyOptional({
     description: 'Note moyenne du restaurant (sur 5)',

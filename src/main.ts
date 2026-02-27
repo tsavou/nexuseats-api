@@ -35,6 +35,8 @@ async function bootstrap() {
     .setVersion('2.0')
     .addTag('restaurants-v1', '⚠️ [DEPRECATED] API utilisant le champ global phoneNumber')
     .addTag('restaurants-v2', '✅ [CURRENT] API utilisant countryCode et localNumber')
+    .addTag('menus', 'API de gestion des menus')
+    .addTag('menu-items', 'API de gestion des items de menu')
     .build();
   
   const doc = SwaggerModule.createDocument(app, config);
@@ -46,5 +48,4 @@ async function bootstrap() {
   logger.log(`📚 Swagger documentation available at http://localhost:${port}/api-docs`);
 }
 bootstrap();
-
 

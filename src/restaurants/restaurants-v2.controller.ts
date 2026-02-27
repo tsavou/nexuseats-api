@@ -3,10 +3,12 @@ import {
   Param, Body, Query, HttpCode, HttpStatus, ParseUUIDPipe,
   Version,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantV2Dto } from './dto/create-restaurant-v2.dto';
 import { UpdateRestaurantV2Dto } from './dto/update-restaurant-v2.dto';
 import { Restaurant } from './entities/restaurant.entity';
+import { FindRestaurantsQueryDto } from './dto/find-restaurants-query.dto';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 /**
@@ -50,6 +52,27 @@ export class RestaurantsV2Controller {
     description: "Nombre d'éléments par page (défaut : 10, max : 100)",
     example: 10,
  })
+ @ApiQuery({
+    name: 'cuisineType',
+    required: false,
+    type: String,
+    description: 'Filtre type de cuisine',
+    example: 'ITALIENNE',
+ })
+ @ApiQuery({
+    name: 'ratingMin',
+    required: false,
+    type: Number,
+    description: 'Filtre note minimale',
+    example: 4,
+ })
+ @ApiQuery({
+    name: 'isOpen',
+    required: false,
+    type: Boolean,
+    description: "Filtre statut d'ouverture",
+    example: true,
+ })
  @ApiResponse({
     status: 200,
     description: 'Liste paginée retournée avec succès',
@@ -60,23 +83,29 @@ export class RestaurantsV2Controller {
             id: 'a1b2c3d4-...',
             name: 'La Bella Italia',
             address: '12 rue de la Paix, 75002 Paris',
-            cuisineType: 'italienne',
+            cuisineType: 'ITALIENNE',
             rating: 4.2,
             averagePrice: 25,
             countryCode: '+33',
             localNumber: '612345678',
             description: 'Restaurant italien authentique au coeur de Paris',
+            isOpen: true,
+            createdAt: '2026-02-27T13:00:00.000Z',
+            updatedAt: '2026-02-27T13:00:00.000Z',
           },
         ],
-        total: 3,
-        page: 1,
-        limit: 10,
-        totalPages: 1,
+        meta: {
+          total: 3,
+          page: 1,
+          limit: 10,
+          lastPage: 1,
+          hasNext: false,
+        },
       },
     },
   })
-  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
-    return this.restaurantsService.findAll(page, limit);
+  findAll(@Query() query: FindRestaurantsQueryDto) {
+    return this.restaurantsService.findAll(query);
   }
 
   // ─────────────────────────────────────────────
@@ -162,7 +191,18 @@ export class RestaurantsV2Controller {
     },
   })
   create(@Body() dto: CreateRestaurantV2Dto) {
-    return this.restaurantsService.create(dto);
+    const data: Prisma.RestaurantCreateInput = {
+      name: dto.name,
+      address: dto.address,
+      cuisineType: dto.cuisineType,
+      rating: dto.rating ?? 0,
+      averagePrice: dto.averagePrice,
+      countryCode: dto.countryCode,
+      localNumber: dto.localNumber,
+      description: dto.description,
+    };
+
+    return this.restaurantsService.create(data);
   }
 
   // ─────────────────────────────────────────────
@@ -204,7 +244,18 @@ export class RestaurantsV2Controller {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateRestaurantV2Dto,
   ) {
-    return this.restaurantsService.update(id, dto);
+    const data: Prisma.RestaurantUpdateInput = {};
+
+    if (dto.name !== undefined) data.name = dto.name;
+    if (dto.address !== undefined) data.address = dto.address;
+    if (dto.cuisineType !== undefined) data.cuisineType = dto.cuisineType;
+    if (dto.rating !== undefined) data.rating = dto.rating;
+    if (dto.averagePrice !== undefined) data.averagePrice = dto.averagePrice;
+    if (dto.countryCode !== undefined) data.countryCode = dto.countryCode;
+    if (dto.localNumber !== undefined) data.localNumber = dto.localNumber;
+    if (dto.description !== undefined) data.description = dto.description;
+
+    return this.restaurantsService.update(id, data);
   }
 
   // ─────────────────────────────────────────────
@@ -215,8 +266,8 @@ export class RestaurantsV2Controller {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    summary: 'Supprimer un restaurant',
-    description: 'Supprime définitivement un restaurant de la plateforme.',
+    summary: 'Supprimer un restaurant (soft delete)',
+    description: 'Masque le restaurant via deletedAt sans suppression physique.',
   })
   @ApiParam({
     name: 'id',
@@ -226,13 +277,13 @@ export class RestaurantsV2Controller {
   })
   @ApiResponse({
     status: 204,
-    description: 'Restaurant supprimé avec succès',
+    description: 'Restaurant soft-deleted avec succès',
   })
   @ApiResponse({
     status: 404,
     description: 'Restaurant introuvable',
   })
   remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.restaurantsService.remove(id);
+    return this.restaurantsService.softDelete(id);
   }
 }

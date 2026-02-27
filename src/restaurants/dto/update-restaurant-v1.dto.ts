@@ -8,7 +8,7 @@ export class UpdateRestaurantDto extends PartialType(CreateRestaurantDto) {}
 // Équivalent à :
 // export class UpdateRestaurantDto {
 //   @IsOptional() @IsString() name?: string;
-//   @IsOptional() @IsEnum(Cuisine) cuisine?: Cuisine;
+//   @IsOptional() @IsEnum(CuisineType) cuisineType?: CuisineType;
 //   @IsOptional() @IsString() address?: string;
 //   ...
 // }

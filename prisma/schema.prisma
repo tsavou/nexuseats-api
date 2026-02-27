@@ -45,6 +45,7 @@ model Menu {
   id           String     @id @default(uuid())
   name         String
   description  String?
+  deletedAt    DateTime?  @map("deleted_at")
   restaurantId String     @map("restaurant_id")
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   items        MenuItem[]
@@ -58,6 +59,7 @@ model MenuItem {
   name       String
   price      Decimal    @db.Decimal(10, 2)
   available  Boolean    @default(true)
+  deletedAt  DateTime?  @map("deleted_at")
   menuId     String     @map("menu_id")
   menu       Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
   categories Category[]

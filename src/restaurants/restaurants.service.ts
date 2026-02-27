@@ -1,85 +1,181 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateRestaurantDto } from './dto/create-restaurant-v1.dto';
-import { randomUUID } from 'crypto';
-import { Restaurant } from './entities/restaurant.entity';
-import { CreateRestaurantV2Dto } from './dto/create-restaurant-v2.dto';
-import { Cuisine } from './enums/cuisine.enum';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { CuisineType, Prisma } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
+import { FindRestaurantsQueryDto } from './dto/find-restaurants-query.dto';
 
-@Injectable()    // ← Dit à NestJS : "je suis injectable via DI"
+@Injectable()
 export class RestaurantsService {
+  constructor(private readonly prisma: PrismaService) {}
 
-  // Pour l'instant, stockage en mémoire (Sprint 3 = Prisma + PostgreSQL)
-  private restaurants: Restaurant[] = [
-    {
-      id: randomUUID(),
-      name: 'La Bella Italia',
-      address: '12 rue de la Paix, 75002 Paris',
-      cuisineType: Cuisine.ITALIENNE,
-      rating: 4.2,
-      averagePrice: 25,
-      phoneNumber: '+33 1 42 61 23 45',
-      countryCode: '+33',
-      localNumber: '123456789',
-      description: 'Restaurant italien authentique au coeur de Paris',
-    },
-    {
-      id: randomUUID(),
-      name: 'Sushi Master',
-      address: "8 avenue de l'Opéra, 75001 Paris",
-      cuisineType: Cuisine.JAPONAISE,
-      rating: 4.5,
-      averagePrice: 35,
-      phoneNumber: '+33 1 53 78 91 23',
-      description: 'Sushis frais préparés par des chefs japonais',
-    },
-    {
-      id: randomUUID(),
-      name: 'Le Bistrot Français',
-      address: '22 boulevard Saint-Germain, 75005 Paris',
-      cuisineType: Cuisine.FRANCAISE,
-      rating: 4.0,
-      averagePrice: 28,
-      phoneNumber: '+33 1 46 33 12 34',
-      description: 'Bistrot français traditionnel',
-    },
-  ];
+  async findAll(query: FindRestaurantsQueryDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
 
-  findAll(page = 1, limit = 10) {
-    const start = (page - 1) * limit;
+    const where: Prisma.RestaurantWhereInput = { deletedAt: null };
+
+    if (query.cuisineType) {
+      where.cuisineType = query.cuisineType;
+    }
+    if (query.ratingMin !== undefined) {
+      where.rating = { gte: query.ratingMin };
+    }
+    if (query.isOpen !== undefined) {
+      where.isOpen = query.isOpen;
+    }
+
+    const [total, restaurants] = await this.prisma.$transaction([
+      this.prisma.restaurant.count({ where }),
+      this.prisma.restaurant.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+
+    const lastPage = total === 0 ? 0 : Math.ceil(total / limit);
+
     return {
-      data: this.restaurants.slice(start, start + limit),
-      meta: { page, limit, total: this.restaurants.length },
+      data: restaurants.map((restaurant) => this.toRestaurantResponse(restaurant)),
+      meta: {
+        total,
+        page,
+        lastPage,
+        hasNext: page < lastPage,
+        limit,
+      },
     };
   }
 
-  findOne(id: string) {
-    const restaurant = this.restaurants.find(r => r.id === id);
+  async findOne(id: string) {
+    const restaurant = await this.prisma.restaurant.findFirst({
+      where: { id, deletedAt: null },
+      include: {
+        menus: {
+          where: { deletedAt: null },
+          orderBy: { name: 'asc' },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            restaurantId: true,
+            items: {
+              where: { deletedAt: null },
+              orderBy: { name: 'asc' },
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                available: true,
+                menuId: true,
+                categories: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
     if (!restaurant) {
       throw new NotFoundException(`Restaurant ${id} introuvable`);
-      // → NestJS retourne automatiquement 404 + message JSON
     }
-    return restaurant;
-  }
 
-  create(dto: CreateRestaurantDto | CreateRestaurantV2Dto) {
-    const restaurant = {
-      id: randomUUID(),    // UUID v4
-      ...dto,
-      rating: 0,
+    return {
+      ...this.toRestaurantResponse(restaurant),
+      menus: restaurant.menus,
     };
-    this.restaurants.push(restaurant);
-    return restaurant;
   }
 
-  update(id: string, dto: Partial<CreateRestaurantDto | CreateRestaurantV2Dto>) {
-    const restaurant = this.findOne(id);
-    Object.assign(restaurant, dto);
-    return restaurant;
+  async create(data: Prisma.RestaurantCreateInput) {
+    const existing = await this.prisma.restaurant.findFirst({
+      where: {
+        name: data.name,
+        address: data.address,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    if (existing) {
+      throw new ConflictException(
+        'Un restaurant avec ce nom et cette adresse existe déjà',
+      );
+    }
+
+    const restaurant = await this.prisma.restaurant.create({
+      data,
+    });
+
+    return this.toRestaurantResponse(restaurant);
   }
 
-  remove(id: string) {
-    const index = this.restaurants.findIndex(r => r.id === id);
-    if (index === -1) throw new NotFoundException();
-    this.restaurants.splice(index, 1);
+  async update(id: string, data: Prisma.RestaurantUpdateInput) {
+    await this.ensureActiveRestaurant(id);
+
+    const restaurant = await this.prisma.restaurant.update({
+      where: { id },
+      data,
+    });
+
+    return this.toRestaurantResponse(restaurant);
+  }
+
+  async softDelete(id: string) {
+    await this.ensureActiveRestaurant(id);
+
+    await this.prisma.restaurant.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
+
+  private async ensureActiveRestaurant(id: string) {
+    const restaurant = await this.prisma.restaurant.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!restaurant) {
+      throw new NotFoundException(`Restaurant ${id} introuvable`);
+    }
+  }
+
+  private toRestaurantResponse(
+    restaurant: {
+      id: string;
+      name: string;
+      address: string;
+      cuisineType: CuisineType;
+      rating: number;
+      averagePrice: number;
+      phoneNumber: string | null;
+      countryCode: string | null;
+      localNumber: string | null;
+      description: string | null;
+      isOpen: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+    },
+  ) {
+    return {
+      id: restaurant.id,
+      name: restaurant.name,
+      address: restaurant.address,
+      cuisineType: restaurant.cuisineType,
+      rating: restaurant.rating,
+      averagePrice: restaurant.averagePrice,
+      phoneNumber: restaurant.phoneNumber ?? undefined,
+      countryCode: restaurant.countryCode ?? undefined,
+      localNumber: restaurant.localNumber ?? undefined,
+      description: restaurant.description ?? undefined,
+      isOpen: restaurant.isOpen,
+      createdAt: restaurant.createdAt,
+      updatedAt: restaurant.updatedAt,
+    };
   }
 }

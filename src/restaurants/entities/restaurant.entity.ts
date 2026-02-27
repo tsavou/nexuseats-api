@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Cuisine } from '../enums/cuisine.enum';
+import { CuisineType } from '@prisma/client';
 /**
  * Entité Restaurant — définit le schéma de réponse Swagger.
  *
@@ -28,10 +28,10 @@ export class Restaurant {
 
  @ApiProperty({
  description: 'Type de cuisine proposée',
- enum: Cuisine,
- example: Cuisine.ITALIENNE,
+ enum: CuisineType,
+ example: CuisineType.ITALIENNE,
  })
- cuisineType: Cuisine;
+ cuisineType: CuisineType;
 
  @ApiPropertyOptional({
  description: 'Note moyenne du restaurant (sur 5)',
@@ -68,4 +68,22 @@ export class Restaurant {
  example: 'Restaurant italien authentique au coeur de Paris',
  })
  description?: string;
+
+ @ApiProperty({
+ description: "Statut d'ouverture du restaurant",
+ example: true,
+ })
+ isOpen: boolean;
+
+ @ApiProperty({
+ description: 'Date de création',
+ example: '2026-02-27T13:00:00.000Z',
+ })
+ createdAt: Date;
+
+ @ApiProperty({
+ description: 'Date de dernière mise à jour',
+ example: '2026-02-27T14:00:00.000Z',
+ })
+ updatedAt: Date;
 }
