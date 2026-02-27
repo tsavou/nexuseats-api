@@ -1,10 +1,11 @@
 import {
   Controller, Get, Post, Patch, Delete,
   Param, Body, Query, HttpCode, HttpStatus, ParseUUIDPipe,
+  Version,
 } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
-import { CreateRestaurantDto } from './dto/create-restaurant.dto';
-import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
+import { CreateRestaurantV2Dto } from './dto/create-restaurant-v2.dto';
+import { UpdateRestaurantV2Dto } from './dto/update-restaurant-v2.dto';
 import { Restaurant } from './entities/restaurant.entity';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -17,9 +18,9 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from 
  * - @ApiResponse : un par code HTTP possible (200, 201, 400, 404, 409)
  * - @ApiParam / @ApiQuery / @ApiBody : documentation des paramètres
  */
-@ApiTags('restaurants')
-@Controller('restaurants')    // Préfixe : toutes les routes commencent par /restaurants
-export class RestaurantsController {
+@Controller({ path: 'restaurants', version: '2' })
+@ApiTags('restaurants-v2')
+export class RestaurantsV2Controller {
 
   // Injection du service via le constructeur (DI)
   constructor(private readonly restaurantsService: RestaurantsService) {}
@@ -27,6 +28,7 @@ export class RestaurantsController {
   // ─────────────────────────────────────────────
   // GET /restaurants?page=1&limit=10
   // ─────────────────────────────────────────────
+  @Version('2')
   @Get()
   @ApiOperation({
     summary: 'Liste paginée des restaurants',
@@ -57,9 +59,13 @@ export class RestaurantsController {
           {
             id: 'a1b2c3d4-...',
             name: 'La Bella Italia',
+            address: '12 rue de la Paix, 75002 Paris',
             cuisineType: 'italienne',
             rating: 4.2,
             averagePrice: 25,
+            countryCode: '+33',
+            localNumber: '612345678',
+            description: 'Restaurant italien authentique au coeur de Paris',
           },
         ],
         total: 3,
@@ -77,6 +83,7 @@ export class RestaurantsController {
   // GET /restaurants/:id
   // ─────────────────────────────────────────────
 
+  @Version('2')
   @Get(':id')
   @ApiOperation({
     summary: 'Récupérer un restaurant par ID',
@@ -114,6 +121,7 @@ export class RestaurantsController {
   // POST /restaurants → 201 Created
   // ─────────────────────────────────────────────
 
+  @Version('2')
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
@@ -122,7 +130,7 @@ export class RestaurantsController {
       'Ajoute un restaurant partenaire à la plateforme NexusEats. ' +
       'Vérifie les doublons (même nom + même adresse).',
  })
-  @ApiBody({ type: CreateRestaurantDto })
+  @ApiBody({ type: CreateRestaurantV2Dto })
   @ApiResponse({
     status: 201,
     description: 'Restaurant créé avec succès',
@@ -153,7 +161,7 @@ export class RestaurantsController {
       },
     },
   })
-  create(@Body() dto: CreateRestaurantDto) {
+  create(@Body() dto: CreateRestaurantV2Dto) {
     return this.restaurantsService.create(dto);
   }
 
@@ -161,6 +169,7 @@ export class RestaurantsController {
   // PATCH /restaurants/:id → 200 OK
   // ─────────────────────────────────────────────
 
+  @Version('2')
   @Patch(':id')
   @ApiOperation({
     summary: 'Modifier partiellement un restaurant',
@@ -175,7 +184,7 @@ export class RestaurantsController {
     example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
   })
   @ApiBody({
-    type: UpdateRestaurantDto,
+    type: UpdateRestaurantV2Dto,
     description: 'Champs à modifier (tous optionnels)',
   })
   @ApiResponse({
@@ -193,7 +202,7 @@ export class RestaurantsController {
   })
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateRestaurantDto,
+    @Body() dto: UpdateRestaurantV2Dto,
   ) {
     return this.restaurantsService.update(id, dto);
   }
@@ -202,6 +211,7 @@ export class RestaurantsController {
   // DELETE /restaurants/:id → 204 No Content
   // ─────────────────────────────────────────────
 
+  @Version('2')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({

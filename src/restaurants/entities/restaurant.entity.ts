@@ -1,21 +1,71 @@
-import { ApiProperty } from '@nestjs/swagger';
-
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Cuisine } from '../dto/create-restaurant-v1.dto';
+/**
+ * Entité Restaurant — définit le schéma de réponse Swagger.
+ *
+ * En décorant chaque propriété avec @ApiProperty, Swagger peut
+ * générer automatiquement les schemas dans la section "Schemas"
+ * et les afficher dans les réponses des endpoints.
+ */
 export class Restaurant {
-  @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', description: 'ID unique du restaurant' })
-  id: string;
+ @ApiProperty({
+ description: 'Identifiant unique du restaurant',
+ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+ })
+ id: string;
 
-  @ApiProperty({ example: 'La Bella Italia', description: 'Nom du restaurant' })
-  name: string;
+ @ApiProperty({
+ description: 'Nom du restaurant',
+ example: 'La Bella Italia',
+ })
+ name: string;
 
-  @ApiProperty({ example: 'italienne', description: 'Type de cuisine' })
-  cuisineType?: string;
-  
-  @ApiProperty({ example: 'ITALIEN', description: 'Type de cuisine (enum)' })
-  cuisine?: string;
+ @ApiProperty({
+ description: 'Adresse complète du restaurant',
+ example: '12 rue de la Paix, 75002 Paris',
+ })
+ address: string;
 
-  @ApiProperty({ example: 4.2, description: 'Note du restaurant' })
-  rating: number;
+ @ApiProperty({
+ description: 'Type de cuisine proposée',
+ enum: Cuisine,
+ example: Cuisine.ITALIENNE,
+ })
+ cuisineType: Cuisine;
 
-  @ApiProperty({ example: 25, description: 'Prix moyen', required: false })
-  averagePrice?: number;
+ @ApiPropertyOptional({
+ description: 'Note moyenne du restaurant (sur 5)',
+ example: 4.2,
+ })
+ rating?: number;
+
+ @ApiProperty({
+ description: 'Prix moyen par personne en euros',
+ example: 25,
+ })
+ averagePrice: number;
+
+ @ApiPropertyOptional({
+ description: 'Numéro de téléphone',
+ example: '+33612345678',
+ })
+ phoneNumber?: string;
+
+ @ApiProperty({
+ description: 'Code pays',
+ example: '+33',
+ })
+ countryCode?: string;
+
+ @ApiProperty({
+ description: 'Numéro local',
+ example: '123456789',
+ })
+ localNumber?: string;
+
+ @ApiPropertyOptional({
+ description: 'Description courte du restaurant',
+ example: 'Restaurant italien authentique au coeur de Paris',
+ })
+ description?: string;
 }

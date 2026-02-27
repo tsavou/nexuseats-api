@@ -1,5 +1,5 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateRestaurantDto } from './create-restaurant.dto';
+import { PartialType } from '@nestjs/swagger';
+import { CreateRestaurantDto } from './create-restaurant-v1.dto';
 
 // PartialType rend TOUS les champs optionnels
 // Parfait pour PATCH (modification partielle)

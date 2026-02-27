@@ -1,13 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
-  app.setGlobalPrefix('api/v1'); 
+  app.setGlobalPrefix('api'); 
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,              // Supprime les champs non décorés
@@ -24,11 +24,17 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+
   const config = new DocumentBuilder()
     .setTitle('NexusEats API')
     .setDescription('API de livraison de repas NexusEats')
-    .setVersion('1.0')
-.addTag('restaurants', 'CRUD des restaurants partenaires NexusEats')
+    .setVersion('2.0')
+    .addTag('restaurants-v1', '⚠️ [DEPRECATED] API utilisant le champ global phoneNumber')
+    .addTag('restaurants-v2', '✅ [CURRENT] API utilisant countryCode et localNumber')
     .build();
   
   const doc = SwaggerModule.createDocument(app, config);
@@ -37,6 +43,7 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
   logger.log(`🚀 NexusEats API running on http://localhost:${port}/api/v1`);
+  logger.log(`📚 Swagger documentation available at http://localhost:${port}/api-docs`);
 }
 bootstrap();
 
