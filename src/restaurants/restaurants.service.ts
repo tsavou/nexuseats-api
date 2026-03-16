@@ -91,7 +91,7 @@ export class RestaurantsService {
     };
   }
 
-  async create(data: Prisma.RestaurantCreateInput) {
+  async create(data: Prisma.RestaurantUncheckedCreateInput) {
     const existing = await this.prisma.restaurant.findFirst({
       where: {
         name: data.name,
@@ -158,6 +158,7 @@ export class RestaurantsService {
       localNumber: string | null;
       description: string | null;
       isOpen: boolean;
+      ownerId: number;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -174,6 +175,7 @@ export class RestaurantsService {
       localNumber: restaurant.localNumber ?? undefined,
       description: restaurant.description ?? undefined,
       isOpen: restaurant.isOpen,
+      ownerId: restaurant.ownerId,
       createdAt: restaurant.createdAt,
       updatedAt: restaurant.updatedAt,
     };

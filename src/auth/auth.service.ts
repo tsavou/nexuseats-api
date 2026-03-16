@@ -12,7 +12,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register({ email, password }: RegisterDto) {
+  async register({ email, password, role }: RegisterDto) {
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       throw new ConflictException('Cet email est déjà utilisé');
@@ -23,6 +23,7 @@ export class AuthService {
       data: {
         email,
         password: hashedPassword,
+        role: role || 'customer',
       },
     });
 

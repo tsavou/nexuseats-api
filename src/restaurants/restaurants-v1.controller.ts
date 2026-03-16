@@ -2,15 +2,20 @@ import {
   Controller, Get, Post, Patch, Delete,
   Param, Body, Query, HttpCode, HttpStatus, ParseUUIDPipe,
   Version,
-  Header,
+  Header, UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { OwnershipGuard } from '../auth/guards/ownership.guard';
 import { Prisma } from '@prisma/client';
 import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantDto } from './dto/create-restaurant-v1.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant-v1.dto';
 import { Restaurant } from './entities/restaurant.entity';
 import { FindRestaurantsQueryDto } from './dto/find-restaurants-query.dto';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 /**
  * Controller Restaurants — routes HTTP du CRUD.
@@ -156,6 +161,9 @@ export class RestaurantsV1Controller {
   // POST /restaurants → 201 Created
   // ─────────────────────────────────────────────
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('owner', 'admin')
   @Version('1')
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -198,8 +206,8 @@ export class RestaurantsV1Controller {
       },
     },
   })
-  create(@Body() dto: CreateRestaurantDto) {
-    const data: Prisma.RestaurantCreateInput = {
+  create(@Body() dto: CreateRestaurantDto, @CurrentUser() user: any) {
+    const data: Prisma.RestaurantUncheckedCreateInput = {
       name: dto.name,
       address: dto.address,
       cuisineType: dto.cuisineType,
@@ -207,6 +215,7 @@ export class RestaurantsV1Controller {
       averagePrice: dto.averagePrice,
       phoneNumber: dto.phoneNumber,
       description: dto.description,
+      ownerId: user.id,
     };
 
     return this.restaurantsService.create(data);
@@ -216,6 +225,9 @@ export class RestaurantsV1Controller {
   // PATCH /restaurants/:id → 200 OK
   // ─────────────────────────────────────────────
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard, OwnershipGuard)
+  @Roles('owner', 'admin')
   @Version('1')
   @Patch(':id')
   @ApiOperation({
@@ -270,6 +282,9 @@ export class RestaurantsV1Controller {
   // DELETE /restaurants/:id → 204 No Content
   // ─────────────────────────────────────────────
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   @Version('1')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

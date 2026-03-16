@@ -26,7 +26,7 @@ async function bootstrap() {
 
   app.enableVersioning({
     type: VersioningType.URI,
-    defaultVersion: '1',
+    defaultVersion: '2',
   });
 
   const config = new DocumentBuilder()

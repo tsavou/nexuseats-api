@@ -35,9 +35,12 @@ model Restaurant {
   updatedAt    DateTime    @updatedAt @map("updated_at")
   deletedAt    DateTime?   @map("deleted_at")
   menus        Menu[]
+  owner        User        @relation(fields: [ownerId], references: [id])
+  ownerId      Int         @map("owner_id")
 
   @@index([cuisineType], map: "idx_restaurants_cuisine")
   @@index([rating], map: "idx_restaurants_rating")
+  @@index([ownerId], map: "idx_restaurants_owner_id")
   @@map("restaurants")
 }
 
@@ -81,8 +84,9 @@ model User {
   email     String   @unique
   password  String
   role      String   @default("customer")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  restaurants Restaurant[]
 
   @@map("users")
 }

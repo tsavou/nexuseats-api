@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { CuisineType, PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+import * as bcrypt from 'bcrypt';
 
 type SeedMenuItem = {
   name: string;
@@ -230,6 +231,13 @@ async function main() {
     });
   }
 
+  const hashedPassword = await bcrypt.hash('secret123', 10);
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@nexus.dev' },
+    create: { email: 'admin@nexus.dev', password: hashedPassword, role: 'admin' },
+    update: {},
+  });
+
   for (const restaurant of restaurants) {
     const menuData = menusCreateInput(restaurant.menus);
 
@@ -247,6 +255,7 @@ async function main() {
         localNumber: restaurant.localNumber,
         description: restaurant.description,
         isOpen: restaurant.isOpen,
+        ownerId: adminUser.id,
         menus: { create: menuData },
       },
       update: {
