@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { MenusModule } from './menus/menus.module';
 import { MenuItemsModule } from './menu-items/menu-items.module';
+import { AuthModule } from './auth/auth.module';
 
 
 @Module({
@@ -19,6 +20,7 @@ import { MenuItemsModule } from './menu-items/menu-items.module';
     MenusModule,
     MenuItemsModule,
     PrismaModule,
+    AuthModule,
     // OrdersModule,           // Sprint 3
     // AuthModule,             // Sprint 4
   ],

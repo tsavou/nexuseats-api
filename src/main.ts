@@ -37,6 +37,11 @@ async function bootstrap() {
     .addTag('restaurants-v2', '✅ [CURRENT] API utilisant countryCode et localNumber')
     .addTag('menus', 'API de gestion des menus')
     .addTag('menu-items', 'API de gestion des items de menu')
+    .addTag('auth', 'Authentification JWT')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'JWT-auth', // This is the name of the security requirement
+    )
     .build();
   
   const doc = SwaggerModule.createDocument(app, config);
