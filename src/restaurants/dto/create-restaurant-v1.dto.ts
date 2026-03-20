@@ -12,8 +12,6 @@ import {
   ValidateNested,
   IsEmail,
   IsArray,
-  ArrayMinSize,
-  IsUUID,
   Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -102,15 +100,7 @@ export class CreateRestaurantDto {
   @IsEmail({}, { message: 'L\'email doit être valide' })
   email: string;
 
-  @ApiProperty({
-    description: 'Liste des IDs de catégories (UUIDv4)',
-    type: [String],
-    example: ['123e4567-e89b-12d3-a456-426614174000'],
-  })
-  @IsArray()
-  @ArrayMinSize(1, { message: 'Au moins une catégorie est requise' })
-  @IsUUID('4', { each: true, message: 'Chaque catégorie doit être un UUID v4 valide' })
-  categoryIds: string[];
+
 
   @ApiPropertyOptional({
     description: 'Horaires d\'ouverture',
