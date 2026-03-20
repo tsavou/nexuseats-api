@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { MenusModule } from './menus/menus.module';
 import { MenuItemsModule } from './menu-items/menu-items.module';
 import { AuthModule } from './auth/auth.module';
+import { RedisCacheModule } from './cache/cache.module';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -20,13 +21,14 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
       envFilePath: '.env',  // lit .env à la racine
     }),
 
+    RedisCacheModule,
     RestaurantsModule,
     MenusModule,
     MenuItemsModule,
     PrismaModule,
     AuthModule,
-    // OrdersModule,           // Sprint 3
-    // AuthModule,             // Sprint 4
+
+
   ],
   controllers: [AppController],
   providers: [
