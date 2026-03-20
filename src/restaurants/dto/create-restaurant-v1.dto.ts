@@ -9,8 +9,19 @@ import {
   Max,
   MinLength,
   MaxLength,
+  ValidateNested,
+  IsEmail,
+  IsArray,
+  ArrayMinSize,
+  IsUUID,
+  Matches,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { AddressDto } from './address.dto';
 import { CuisineType } from '@prisma/client';
+import { IsUniqueRestaurantName } from '../validators/is-unique-restaurant-name.validator';
+import { IsOpeningHoursValid } from '../validators/is-opening-hours-valid.validator';
+import { OpeningHourDto } from './opening-hour.dto';
 
 /**
  * DTO de création d'un restaurant.
@@ -33,19 +44,14 @@ export class CreateRestaurantDto {
   @IsNotEmpty({ message: 'Le nom est obligatoire' })
   @MinLength(2, { message: 'Le nom doit faire au moins 2 caractères' })
   @MaxLength(100)
+  @IsUniqueRestaurantName()
   name: string;
 
-  @ApiProperty({
-    description: 'Adresse complète du restaurant',
-    example: '12 rue de la Paix, 75002 Paris',
-    minLength: 5,
-    maxLength: 255,
-  })
-  @IsString()
+  @ApiProperty({ type: () => AddressDto, description: 'Adresse complète du restaurant' })
+  @ValidateNested()
+  @Type(() => AddressDto)
   @IsNotEmpty({ message: "L'adresse est obligatoire" })
-  @MinLength(5)
-  @MaxLength(255)
-  address: string;
+  address: AddressDto;
 
   @ApiProperty({
     description: 'Type de cuisine proposée',
@@ -55,7 +61,7 @@ export class CreateRestaurantDto {
   @IsEnum(CuisineType, {
     message: `Type de cuisine invalide. Valeurs : ${Object.values(CuisineType).join(', ')}`,
   })
-  cuisineType: CuisineType;
+  cuisine: CuisineType;
 
   @ApiPropertyOptional({
     description: 'Note moyenne du restaurant (sur 5)',
@@ -81,13 +87,41 @@ export class CreateRestaurantDto {
   @Max(500)
   averagePrice: number;
 
+  @ApiProperty({
+    description: 'Numéro de téléphone du restaurant au format international',
+    example: '+33142612345',
+  })
+  @IsString()
+  @Matches(/^\+?[0-9]{10,15}$/, { message: 'Le format du téléphone doit être international (ex: +33123456789)' })
+  phone: string;
+
+  @ApiProperty({
+    description: 'Email de contact du restaurant',
+    example: 'contact@labellaitalia.fr',
+  })
+  @IsEmail({}, { message: 'L\'email doit être valide' })
+  email: string;
+
+  @ApiProperty({
+    description: 'Liste des IDs de catégories (UUIDv4)',
+    type: [String],
+    example: ['123e4567-e89b-12d3-a456-426614174000'],
+  })
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Au moins une catégorie est requise' })
+  @IsUUID('4', { each: true, message: 'Chaque catégorie doit être un UUID v4 valide' })
+  categoryIds: string[];
+
   @ApiPropertyOptional({
-    description: 'Numéro de téléphone du restaurant',
-    example: '+33 1 42 61 23 45',
+    description: 'Horaires d\'ouverture',
+    type: [OpeningHourDto],
   })
   @IsOptional()
-  @IsString()
-  phoneNumber?: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OpeningHourDto)
+  @IsOpeningHoursValid()
+  openingHours?: OpeningHourDto[];
   
   @ApiPropertyOptional({
     description: 'Description courte du restaurant',

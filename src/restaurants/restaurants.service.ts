@@ -95,7 +95,10 @@ export class RestaurantsService {
     const existing = await this.prisma.restaurant.findFirst({
       where: {
         name: data.name,
-        address: data.address,
+        street: data.street,
+        city: data.city,
+        zipCode: data.zipCode,
+        country: data.country,
         deletedAt: null,
       },
       select: { id: true },
@@ -149,7 +152,10 @@ export class RestaurantsService {
     restaurant: {
       id: string;
       name: string;
-      address: string;
+      street: string;
+      city: string;
+      zipCode: string;
+      country: string;
       cuisineType: CuisineType;
       rating: number;
       averagePrice: number;
@@ -166,7 +172,7 @@ export class RestaurantsService {
     return {
       id: restaurant.id,
       name: restaurant.name,
-      address: restaurant.address,
+      address: `${restaurant.street}, ${restaurant.zipCode} ${restaurant.city}, ${restaurant.country}`,
       cuisineType: restaurant.cuisineType,
       rating: restaurant.rating,
       averagePrice: restaurant.averagePrice,

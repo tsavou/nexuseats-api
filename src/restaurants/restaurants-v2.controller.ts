@@ -201,8 +201,11 @@ export class RestaurantsV2Controller {
   create(@Body() dto: CreateRestaurantV2Dto, @CurrentUser() user: any) {
     const data: Prisma.RestaurantUncheckedCreateInput = {
       name: dto.name,
-      address: dto.address,
-      cuisineType: dto.cuisineType,
+      street: dto.address.street,
+      city: dto.address.city,
+      zipCode: dto.address.zipCode,
+      country: dto.address.country,
+      cuisineType: dto.cuisine,
       rating: dto.rating ?? 0,
       averagePrice: dto.averagePrice,
       countryCode: dto.countryCode,
@@ -259,8 +262,15 @@ export class RestaurantsV2Controller {
     const data: Prisma.RestaurantUpdateInput = {};
 
     if (dto.name !== undefined) data.name = dto.name;
-    if (dto.address !== undefined) data.address = dto.address;
-    if (dto.cuisineType !== undefined) data.cuisineType = dto.cuisineType;
+
+    if (dto.address !== undefined) {
+      data.street = dto.address.street;
+      data.city = dto.address.city;
+      data.zipCode = dto.address.zipCode;
+      data.country = dto.address.country;
+    }
+
+    if (dto.cuisine !== undefined) data.cuisineType = dto.cuisine;
     if (dto.rating !== undefined) data.rating = dto.rating;
     if (dto.averagePrice !== undefined) data.averagePrice = dto.averagePrice;
     if (dto.countryCode !== undefined) data.countryCode = dto.countryCode;

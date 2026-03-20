@@ -21,7 +21,10 @@ type SeedRestaurant = {
   id: string;
   name: string;
   cuisineType: CuisineType;
-  address: string;
+  street: string;
+  city: string;
+  zipCode: string;
+  country: string;
   rating: number;
   averagePrice: number;
   phoneNumber?: string;
@@ -57,7 +60,10 @@ const restaurants: SeedRestaurant[] = [
     id: '11111111-1111-4111-8111-111111111111',
     name: 'La Bella Italia',
     cuisineType: CuisineType.ITALIENNE,
-    address: '12 rue de la Paix, 75002 Paris',
+    street: '12 rue de la Paix',
+    city: 'Paris',
+    zipCode: '75002',
+    country: 'FR',
     rating: 4.3,
     averagePrice: 24,
     phoneNumber: '+33 1 42 61 23 45',
@@ -108,7 +114,10 @@ const restaurants: SeedRestaurant[] = [
     id: '22222222-2222-4222-8222-222222222222',
     name: 'Sushi Master',
     cuisineType: CuisineType.JAPONAISE,
-    address: "8 avenue de l'Opera, 75001 Paris",
+    street: "8 avenue de l'Opera",
+    city: 'Paris',
+    zipCode: '75001',
+    country: 'FR',
     rating: 4.6,
     averagePrice: 32,
     countryCode: '+33',
@@ -158,7 +167,10 @@ const restaurants: SeedRestaurant[] = [
     id: '33333333-3333-4333-8333-333333333333',
     name: 'Le Bistrot Francais',
     cuisineType: CuisineType.FRANCAISE,
-    address: '22 boulevard Saint-Germain, 75005 Paris',
+    street: '22 boulevard Saint-Germain',
+    city: 'Paris',
+    zipCode: '75005',
+    country: 'FR',
     rating: 4.1,
     averagePrice: 27,
     phoneNumber: '+33 1 46 33 12 34',
@@ -247,7 +259,10 @@ async function main() {
         id: restaurant.id,
         name: restaurant.name,
         cuisineType: restaurant.cuisineType,
-        address: restaurant.address,
+        street: restaurant.street,
+        city: restaurant.city,
+        zipCode: restaurant.zipCode,
+        country: restaurant.country,
         rating: restaurant.rating,
         averagePrice: restaurant.averagePrice,
         phoneNumber: restaurant.phoneNumber,
@@ -261,7 +276,10 @@ async function main() {
       update: {
         name: restaurant.name,
         cuisineType: restaurant.cuisineType,
-        address: restaurant.address,
+        street: restaurant.street,
+        city: restaurant.city,
+        zipCode: restaurant.zipCode,
+        country: restaurant.country,
         rating: restaurant.rating,
         averagePrice: restaurant.averagePrice,
         phoneNumber: restaurant.phoneNumber,

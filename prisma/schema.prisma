@@ -23,7 +23,10 @@ model Restaurant {
   id           String      @id @default(uuid())
   name         String
   cuisineType  CuisineType @map("cuisine")
-  address      String
+  street       String
+  city         String
+  zipCode      String      @map("zip_code")
+  country      String
   rating       Float       @default(0)
   averagePrice Float       @map("average_price")
   phoneNumber  String?     @map("phone_number")

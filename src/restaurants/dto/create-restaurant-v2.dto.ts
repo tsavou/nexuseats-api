@@ -9,8 +9,19 @@ import {
   Max,
   MinLength,
   MaxLength,
+  ValidateNested,
+  IsEmail,
+  IsArray,
+  ArrayMinSize,
+  IsUUID,
+  Matches,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { CuisineType } from '@prisma/client';
+import { AddressDto } from './address.dto';
+import { IsUniqueRestaurantName } from '../validators/is-unique-restaurant-name.validator';
+import { IsOpeningHoursValid } from '../validators/is-opening-hours-valid.validator';
+import { OpeningHourDto } from './opening-hour.dto';
 
 /**
  * DTO de création d'un restaurant.
@@ -33,19 +44,14 @@ export class CreateRestaurantV2Dto {
   @IsNotEmpty({ message: 'Le nom est obligatoire' })
   @MinLength(2, { message: 'Le nom doit faire au moins 2 caractères' })
   @MaxLength(100)
+  @IsUniqueRestaurantName()
   name: string;
 
-  @ApiProperty({
-    description: 'Adresse complète du restaurant',
-    example: '12 rue de la Paix, 75002 Paris',
-    minLength: 5,
-    maxLength: 255,
-  })
-  @IsString()
+  @ApiProperty({ type: () => AddressDto, description: 'Adresse complète du restaurant' })
+  @ValidateNested()
+  @Type(() => AddressDto)
   @IsNotEmpty({ message: "L'adresse est obligatoire" })
-  @MinLength(5)
-  @MaxLength(255)
-  address: string;
+  address: AddressDto;
 
   @ApiProperty({
     description: 'Type de cuisine proposée',
@@ -55,7 +61,7 @@ export class CreateRestaurantV2Dto {
   @IsEnum(CuisineType, {
     message: `Type de cuisine invalide. Valeurs : ${Object.values(CuisineType).join(', ')}`,
   })
-  cuisineType: CuisineType;
+  cuisine: CuisineType;
 
   @ApiPropertyOptional({
     description: 'Note moyenne du restaurant (sur 5)',
@@ -95,6 +101,34 @@ export class CreateRestaurantV2Dto {
   @MinLength(9)
   @MaxLength(15)
   localNumber: string;
+
+  @ApiProperty({
+    description: 'Email de contact du restaurant',
+    example: 'contact@labellaitalia.fr',
+  })
+  @IsEmail({}, { message: 'L\'email doit être valide' })
+  email: string;
+
+  @ApiProperty({
+    description: 'Liste des IDs de catégories (UUIDv4)',
+    type: [String],
+    example: ['123e4567-e89b-12d3-a456-426614174000'],
+  })
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Au moins une catégorie est requise' })
+  @IsUUID('4', { each: true, message: 'Chaque catégorie doit être un UUID v4 valide' })
+  categoryIds: string[];
+
+  @ApiPropertyOptional({
+    description: 'Horaires d\'ouverture',
+    type: [OpeningHourDto],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OpeningHourDto)
+  @IsOpeningHoursValid()
+  openingHours?: OpeningHourDto[];
   
   @ApiPropertyOptional({
     description: 'Description courte du restaurant',

@@ -209,11 +209,14 @@ export class RestaurantsV1Controller {
   create(@Body() dto: CreateRestaurantDto, @CurrentUser() user: any) {
     const data: Prisma.RestaurantUncheckedCreateInput = {
       name: dto.name,
-      address: dto.address,
-      cuisineType: dto.cuisineType,
+      street: dto.address.street,
+      city: dto.address.city,
+      zipCode: dto.address.zipCode,
+      country: dto.address.country,
+      cuisineType: dto.cuisine,
       rating: dto.rating ?? 0,
       averagePrice: dto.averagePrice,
-      phoneNumber: dto.phoneNumber,
+      phoneNumber: dto.phone,
       description: dto.description,
       ownerId: user.id,
     };
@@ -268,11 +271,18 @@ export class RestaurantsV1Controller {
     const data: Prisma.RestaurantUpdateInput = {};
 
     if (dto.name !== undefined) data.name = dto.name;
-    if (dto.address !== undefined) data.address = dto.address;
-    if (dto.cuisineType !== undefined) data.cuisineType = dto.cuisineType;
+    
+    if (dto.address !== undefined) {
+      data.street = dto.address.street;
+      data.city = dto.address.city;
+      data.zipCode = dto.address.zipCode;
+      data.country = dto.address.country;
+    }
+
+    if (dto.cuisine !== undefined) data.cuisineType = dto.cuisine;
     if (dto.rating !== undefined) data.rating = dto.rating;
     if (dto.averagePrice !== undefined) data.averagePrice = dto.averagePrice;
-    if (dto.phoneNumber !== undefined) data.phoneNumber = dto.phoneNumber;
+    if (dto.phone !== undefined) data.phoneNumber = dto.phone;
     if (dto.description !== undefined) data.description = dto.description;
 
     return this.restaurantsService.update(id, data);
