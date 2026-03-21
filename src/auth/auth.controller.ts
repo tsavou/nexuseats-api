@@ -19,6 +19,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('auth')
 @Controller({
@@ -40,6 +41,12 @@ export class AuthController {
   }
 
   @Post('login')
+  @Throttle({
+    short: {
+      ttl: 1000,
+      limit: 3,
+    },
+  })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Connexion d'un utilisateur" })
   @ApiResponse({

@@ -10,6 +10,7 @@ import { Cache } from 'cache-manager';
 import { CuisineType, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindRestaurantsQueryDto } from './dto/find-restaurants-query.dto';
+import { ScrollRestaurantsQueryDto } from './dto/scroll-restaurants-query.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -33,7 +34,16 @@ export class RestaurantsService {
   // ─────────────────────────────────────────────
 
   async findAll(query: FindRestaurantsQueryDto) {
-    const cacheKey = `${this.LIST_PREFIX}${JSON.stringify(query)}`;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const normalizedQuery = {
+      page,
+      limit,
+      ...(query.cuisineType ? { cuisineType: query.cuisineType } : {}),
+      ...(query.ratingMin !== undefined ? { ratingMin: query.ratingMin } : {}),
+      ...(query.isOpen !== undefined ? { isOpen: query.isOpen } : {}),
+    };
+    const cacheKey = `${this.LIST_PREFIX}${JSON.stringify(normalizedQuery)}`;
 
     // 1. Vérifier le cache
     const cached = await this.cacheManager.get(cacheKey);
@@ -45,20 +55,7 @@ export class RestaurantsService {
     this.logger.log(`Cache MISS for key: ${cacheKey}`);
 
     // 2. Cache miss → requête PostgreSQL
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
-
-    const where: Prisma.RestaurantWhereInput = { deletedAt: null };
-
-    if (query.cuisineType) {
-      where.cuisineType = query.cuisineType;
-    }
-    if (query.ratingMin !== undefined) {
-      where.rating = { gte: query.ratingMin };
-    }
-    if (query.isOpen !== undefined) {
-      where.isOpen = query.isOpen;
-    }
+    const where = this.buildRestaurantWhere(query);
 
     const [total, restaurants] = await this.prisma.$transaction([
       this.prisma.restaurant.count({ where }),
@@ -70,7 +67,7 @@ export class RestaurantsService {
       }),
     ]);
 
-    const lastPage = total === 0 ? 0 : Math.ceil(total / limit);
+    const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
 
     const result = {
       data: restaurants.map((restaurant) =>
@@ -79,9 +76,10 @@ export class RestaurantsService {
       meta: {
         total,
         page,
-        lastPage,
-        hasNext: page < lastPage,
         limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrevious: page > 1,
       },
     };
 
@@ -89,6 +87,40 @@ export class RestaurantsService {
     await this.cacheManager.set(cacheKey, result, this.LIST_TTL);
 
     return result;
+  }
+
+  async findAllCursor(query: ScrollRestaurantsQueryDto) {
+    const limit = query.limit ?? 20;
+
+    if (query.cursor) {
+      await this.ensureActiveRestaurant(query.cursor);
+    }
+
+    const restaurants = await this.prisma.restaurant.findMany({
+      where: { deletedAt: null },
+      orderBy: { id: 'asc' },
+      ...(query.cursor
+        ? {
+            cursor: { id: query.cursor },
+            skip: 1,
+          }
+        : {}),
+      take: limit + 1,
+    });
+
+    const hasNext = restaurants.length > limit;
+    const pageItems = hasNext ? restaurants.slice(0, limit) : restaurants;
+    const nextCursor = hasNext
+      ? pageItems[pageItems.length - 1]?.id ?? null
+      : null;
+
+    return {
+      data: pageItems.map((restaurant) => this.toRestaurantResponse(restaurant)),
+      meta: {
+        nextCursor,
+        hasNext,
+      },
+    };
   }
 
   // ─────────────────────────────────────────────
@@ -289,6 +321,27 @@ export class RestaurantsService {
     if (!restaurant) {
       throw new NotFoundException(`Restaurant ${id} introuvable`);
     }
+  }
+
+  private buildRestaurantWhere(
+    query: Pick<
+      FindRestaurantsQueryDto,
+      'cuisineType' | 'ratingMin' | 'isOpen'
+    >,
+  ): Prisma.RestaurantWhereInput {
+    const where: Prisma.RestaurantWhereInput = { deletedAt: null };
+
+    if (query.cuisineType) {
+      where.cuisineType = query.cuisineType;
+    }
+    if (query.ratingMin !== undefined) {
+      where.rating = { gte: query.ratingMin };
+    }
+    if (query.isOpen !== undefined) {
+      where.isOpen = query.isOpen;
+    }
+
+    return where;
   }
 
   private toRestaurantResponse(restaurant: {

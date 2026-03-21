@@ -115,14 +115,14 @@ describe('RestaurantsService', () => {
   });
 
   it('findAll returns cached data without querying Prisma', async () => {
-    const query = { page: 1, limit: 10 };
+    const query = { page: 1, limit: 20 };
     const cachedResult = { data: [restaurantResponse], meta: { total: 1 } };
 
     cacheManagerMock.get.mockResolvedValue(cachedResult);
 
     await expect(service.findAll(query)).resolves.toEqual(cachedResult);
     expect(cacheManagerMock.get).toHaveBeenCalledWith(
-      'restaurants:list:{"page":1,"limit":10}',
+      'restaurants:list:{"page":1,"limit":20}',
     );
     expect(prismaMock.restaurant.count).not.toHaveBeenCalled();
     expect(prismaMock.restaurant.findMany).not.toHaveBeenCalled();
@@ -171,9 +171,10 @@ describe('RestaurantsService', () => {
       meta: {
         total: 2,
         page: 2,
-        lastPage: 2,
-        hasNext: false,
         limit: 1,
+        totalPages: 2,
+        hasNext: false,
+        hasPrevious: true,
       },
     });
   });
@@ -187,10 +188,66 @@ describe('RestaurantsService', () => {
       meta: {
         total: 0,
         page: 1,
-        lastPage: 0,
+        limit: 20,
+        totalPages: 0,
         hasNext: false,
-        limit: 10,
+        hasPrevious: false,
       },
+    });
+  });
+
+  it('findAllCursor returns a slice with nextCursor when more data exists', async () => {
+    const secondRestaurant = {
+      ...restaurant,
+      id: 'restaurant-2',
+      name: 'Nexus Burger',
+    };
+    const thirdRestaurant = {
+      ...restaurant,
+      id: 'restaurant-3',
+      name: 'Nexus Sushi',
+    };
+
+    prismaMock.restaurant.findMany.mockResolvedValue([
+      restaurant,
+      secondRestaurant,
+      thirdRestaurant,
+    ]);
+
+    await expect(service.findAllCursor({ limit: 2 })).resolves.toEqual({
+      data: [
+        restaurantResponse,
+        {
+          ...restaurantResponse,
+          id: 'restaurant-2',
+          name: 'Nexus Burger',
+        },
+      ],
+      meta: {
+        nextCursor: 'restaurant-2',
+        hasNext: true,
+      },
+    });
+
+    expect(prismaMock.restaurant.findMany).toHaveBeenCalledWith({
+      where: { deletedAt: null },
+      orderBy: { id: 'asc' },
+      take: 3,
+    });
+  });
+
+  it('findAllCursor skips the cursor item to avoid duplicates', async () => {
+    prismaMock.restaurant.findFirst.mockResolvedValue({ id: restaurant.id });
+    prismaMock.restaurant.findMany.mockResolvedValue([restaurant]);
+
+    await service.findAllCursor({ cursor: restaurant.id, limit: 2 });
+
+    expect(prismaMock.restaurant.findMany).toHaveBeenCalledWith({
+      where: { deletedAt: null },
+      orderBy: { id: 'asc' },
+      cursor: { id: restaurant.id },
+      skip: 1,
+      take: 3,
     });
   });
 

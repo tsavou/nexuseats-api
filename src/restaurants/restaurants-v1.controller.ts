@@ -25,6 +25,7 @@ import { CreateRestaurantDto } from './dto/create-restaurant-v1.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant-v1.dto';
 import { Restaurant } from './entities/restaurant.entity';
 import { FindRestaurantsQueryDto } from './dto/find-restaurants-query.dto';
+import { ScrollRestaurantsQueryDto } from './dto/scroll-restaurants-query.dto';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -51,7 +52,7 @@ export class RestaurantsV1Controller {
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
   // ─────────────────────────────────────────────
-  // GET /restaurants?page=1&limit=10
+  // GET /restaurants?page=1&limit=20
   // ─────────────────────────────────────────────
   @Version('1')
   @Get()
@@ -74,8 +75,8 @@ export class RestaurantsV1Controller {
     name: 'limit',
     required: false,
     type: Number,
-    description: "Nombre d'éléments par page (défaut : 10, max : 100)",
-    example: 10,
+    description: "Nombre d'éléments par page (défaut : 20, max : 100)",
+    example: 20,
   })
   @ApiQuery({
     name: 'cuisineType',
@@ -121,9 +122,10 @@ export class RestaurantsV1Controller {
         meta: {
           total: 3,
           page: 1,
-          limit: 10,
-          lastPage: 1,
+          limit: 20,
+          totalPages: 1,
           hasNext: false,
+          hasPrevious: false,
         },
       },
     },
@@ -135,6 +137,47 @@ export class RestaurantsV1Controller {
   // ─────────────────────────────────────────────
   // GET /restaurants/:id
   // ─────────────────────────────────────────────
+
+  @Version('1')
+  @Get('scroll')
+  @ApiOperation({
+    summary: '[DEPRECATED] Scroll cursor des restaurants',
+    deprecated: true,
+    description:
+      'DEPRECATED: Utilisez /v2/restaurants/scroll. Cette route utilise le champ global phoneNumber.',
+  })
+  @Header('Deprecation', 'true')
+  @Header('Link', '</v2/restaurants/scroll>; rel="successor-version"')
+  @ApiQuery({
+    name: 'cursor',
+    required: false,
+    type: String,
+    description: 'UUID du dernier restaurant reçu',
+    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: "Nombre d'éléments retournés (défaut : 20, max : 100)",
+    example: 20,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lot cursor retourné avec succès',
+    schema: {
+      example: {
+        data: [],
+        meta: {
+          nextCursor: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+          hasNext: true,
+        },
+      },
+    },
+  })
+  findAllCursor(@Query() query: ScrollRestaurantsQueryDto) {
+    return this.restaurantsService.findAllCursor(query);
+  }
 
   @Version('1')
   @Get(':id')

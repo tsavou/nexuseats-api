@@ -43,7 +43,7 @@ export class FindRestaurantsQueryDto {
 
   @ApiPropertyOptional({
     description: "Nombre d'éléments par page",
-    default: 10,
+    default: 20,
     minimum: 1,
     maximum: 100,
   })
@@ -52,7 +52,7 @@ export class FindRestaurantsQueryDto {
   @IsInt()
   @Min(1)
   @Max(100)
-  limit?: number = 10;
+  limit?: number = 20;
 
   @ApiPropertyOptional({
     description: 'Filtre type de cuisine',
