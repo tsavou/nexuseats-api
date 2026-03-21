@@ -1,4 +1,14 @@
-import { Controller, Post, Body, Get, UseGuards, Request, VERSION_NEUTRAL } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  Request,
+  VERSION_NEUTRAL,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -22,8 +32,9 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Connexion d\'un utilisateur' })
-  @ApiResponse({ status: 201, description: 'Connexion réussie, retourne le JWT.' })
+  @ApiResponse({ status: 200, description: 'Connexion réussie, retourne le JWT.' })
   @ApiResponse({ status: 401, description: 'Identifiants invalides.' })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);

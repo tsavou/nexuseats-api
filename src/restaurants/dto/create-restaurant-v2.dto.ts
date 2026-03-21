@@ -17,7 +17,6 @@ import {
 import { Type } from 'class-transformer';
 import { CuisineType } from '@prisma/client';
 import { AddressDto } from './address.dto';
-import { IsUniqueRestaurantName } from '../validators/is-unique-restaurant-name.validator';
 import { IsOpeningHoursValid } from '../validators/is-opening-hours-valid.validator';
 import { OpeningHourDto } from './opening-hour.dto';
 
@@ -42,7 +41,6 @@ export class CreateRestaurantV2Dto {
   @IsNotEmpty({ message: 'Le nom est obligatoire' })
   @MinLength(2, { message: 'Le nom doit faire au moins 2 caractères' })
   @MaxLength(100)
-  @IsUniqueRestaurantName()
   name: string;
 
   @ApiProperty({ type: () => AddressDto, description: 'Adresse complète du restaurant' })

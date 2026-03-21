@@ -161,26 +161,38 @@ export class RestaurantsService {
   // ─────────────────────────────────────────────
 
   async create(data: Prisma.RestaurantUncheckedCreateInput) {
-    const existing = await this.prisma.restaurant.findFirst({
-      where: {
-        name: data.name,
-        street: data.street,
-        city: data.city,
-        zipCode: data.zipCode,
-        country: data.country,
-        deletedAt: null,
-      },
-      select: { id: true },
-    });
+    const lockKey = [
+      data.name,
+      data.street,
+      data.city,
+      data.zipCode,
+      data.country,
+    ].join('|');
 
-    if (existing) {
-      throw new ConflictException(
-        'Un restaurant avec ce nom et cette adresse existe déjà',
-      );
-    }
+    const restaurant = await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
 
-    const restaurant = await this.prisma.restaurant.create({
-      data,
+      const existing = await tx.restaurant.findFirst({
+        where: {
+          name: data.name,
+          street: data.street,
+          city: data.city,
+          zipCode: data.zipCode,
+          country: data.country,
+          deletedAt: null,
+        },
+        select: { id: true },
+      });
+
+      if (existing) {
+        throw new ConflictException(
+          'Un restaurant avec ce nom et cette adresse existe déjà',
+        );
+      }
+
+      return tx.restaurant.create({
+        data,
+      });
     });
 
     // Invalider toutes les clés de liste
