@@ -1,5 +1,9 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CuisineType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,6 +11,25 @@ import { RestaurantsService } from './restaurants.service';
 
 describe('RestaurantsService', () => {
   let service: RestaurantsService;
+  const defaultListSelect = {
+    id: true,
+    name: true,
+    street: true,
+    city: true,
+    zipCode: true,
+    country: true,
+    cuisineType: true,
+    rating: true,
+    averagePrice: true,
+    phoneNumber: true,
+    countryCode: true,
+    localNumber: true,
+    description: true,
+    isOpen: true,
+    ownerId: true,
+    createdAt: true,
+    updatedAt: true,
+  };
 
   const restaurant = {
     id: 'restaurant-1',
@@ -160,6 +183,7 @@ describe('RestaurantsService', () => {
       skip: 1,
       take: 1,
       orderBy: { createdAt: 'desc' },
+      select: defaultListSelect,
     });
     expect(cacheManagerMock.set).toHaveBeenCalledWith(
       'restaurants:list:{"page":2,"limit":1,"cuisineType":"ITALIENNE","ratingMin":4,"isOpen":true}',
@@ -194,6 +218,72 @@ describe('RestaurantsService', () => {
         hasPrevious: false,
       },
     });
+  });
+
+  it('findAll applies a Prisma select when fields are requested', async () => {
+    cacheManagerMock.get.mockResolvedValue(undefined);
+    prismaMock.$transaction.mockResolvedValue([
+      1,
+      [
+        {
+          id: restaurant.id,
+          name: restaurant.name,
+          cuisineType: restaurant.cuisineType,
+          rating: restaurant.rating,
+        },
+      ],
+    ]);
+
+    const result = await service.findAll({
+      page: 1,
+      limit: 20,
+      fields: 'id,name,cuisine,rating',
+    });
+
+    expect(prismaMock.restaurant.findMany).toHaveBeenCalledWith({
+      where: { deletedAt: null },
+      skip: 0,
+      take: 20,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        cuisineType: true,
+        rating: true,
+      },
+    });
+    expect(cacheManagerMock.set).toHaveBeenCalledWith(
+      'restaurants:list:{"page":1,"limit":20,"fields":["cuisine","id","name","rating"]}',
+      result,
+      300000,
+    );
+    expect(result).toEqual({
+      data: [
+        {
+          id: restaurant.id,
+          name: restaurant.name,
+          cuisine: restaurant.cuisineType,
+          rating: restaurant.rating,
+        },
+      ],
+      meta: {
+        total: 1,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+        hasNext: false,
+        hasPrevious: false,
+      },
+    });
+  });
+
+  it('findAll rejects unknown fields', async () => {
+    await expect(
+      service.findAll({
+        fields: 'id,unknownField',
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 
   it('findAllCursor returns a slice with nextCursor when more data exists', async () => {
@@ -233,6 +323,7 @@ describe('RestaurantsService', () => {
       where: { deletedAt: null },
       orderBy: { id: 'asc' },
       take: 3,
+      select: defaultListSelect,
     });
   });
 
@@ -248,6 +339,7 @@ describe('RestaurantsService', () => {
       cursor: { id: restaurant.id },
       skip: 1,
       take: 3,
+      select: defaultListSelect,
     });
   });
 

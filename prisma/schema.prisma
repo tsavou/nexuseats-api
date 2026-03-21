@@ -42,7 +42,9 @@ model Restaurant {
   ownerId      Int         @map("owner_id")
 
   @@index([cuisineType], map: "idx_restaurants_cuisine")
-  @@index([rating], map: "idx_restaurants_rating")
+  @@index([rating(sort: Desc)], map: "idx_restaurants_rating")
+  @@index([name], map: "idx_restaurants_name")
+  @@index([deletedAt, createdAt(sort: Desc)], map: "idx_restaurants_deleted_created_at")
   @@index([ownerId], map: "idx_restaurants_owner_id")
   @@map("restaurants")
 }
@@ -71,6 +73,7 @@ model MenuItem {
   categories Category[]
 
   @@index([menuId], map: "idx_menu_items_menu_id")
+  @@index([price], map: "idx_menu_items_price")
   @@map("menu_items")
 }
 

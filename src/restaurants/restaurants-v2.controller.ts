@@ -96,6 +96,14 @@ export class RestaurantsV2Controller {
     description: "Filtre statut d'ouverture",
     example: true,
   })
+  @ApiQuery({
+    name: 'fields',
+    required: false,
+    type: String,
+    description:
+      'Liste des champs à retourner, séparés par des virgules. Exemple: id,name,cuisine,rating',
+    example: 'id,name,cuisine,rating',
+  })
   @ApiResponse({
     status: 200,
     description: 'Liste paginée retournée avec succès',

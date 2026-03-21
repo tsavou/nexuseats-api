@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -15,6 +16,24 @@ import { ScrollRestaurantsQueryDto } from './dto/scroll-restaurants-query.dto';
 @Injectable()
 export class RestaurantsService {
   private readonly logger = new Logger(RestaurantsService.name);
+  private readonly defaultListFields = [
+    'id',
+    'name',
+    'address',
+    'cuisine',
+    'cuisineType',
+    'rating',
+    'averagePrice',
+    'phoneNumber',
+    'countryCode',
+    'localNumber',
+    'description',
+    'isOpen',
+    'ownerId',
+    'createdAt',
+    'updatedAt',
+  ] as const;
+  private readonly allowedListFields = new Set<string>(this.defaultListFields);
 
   // Préfixes de clés Redis
   private readonly LIST_PREFIX = 'restaurants:list:';
@@ -36,12 +55,16 @@ export class RestaurantsService {
   async findAll(query: FindRestaurantsQueryDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
+    const fieldSelection = this.buildFieldSelection(query.fields);
     const normalizedQuery = {
       page,
       limit,
       ...(query.cuisineType ? { cuisineType: query.cuisineType } : {}),
       ...(query.ratingMin !== undefined ? { ratingMin: query.ratingMin } : {}),
       ...(query.isOpen !== undefined ? { isOpen: query.isOpen } : {}),
+      ...(fieldSelection.cacheFields.length > 0
+        ? { fields: fieldSelection.cacheFields }
+        : {}),
     };
     const cacheKey = `${this.LIST_PREFIX}${JSON.stringify(normalizedQuery)}`;
 
@@ -64,6 +87,7 @@ export class RestaurantsService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        select: fieldSelection.select,
       }),
     ]);
 
@@ -71,7 +95,7 @@ export class RestaurantsService {
 
     const result = {
       data: restaurants.map((restaurant) =>
-        this.toRestaurantResponse(restaurant),
+        this.toRestaurantResponse(restaurant, fieldSelection.responseFields),
       ),
       meta: {
         total,
@@ -106,6 +130,7 @@ export class RestaurantsService {
           }
         : {}),
       take: limit + 1,
+      select: this.buildDefaultListSelect(),
     });
 
     const hasNext = restaurants.length > limit;
@@ -344,41 +369,131 @@ export class RestaurantsService {
     return where;
   }
 
-  private toRestaurantResponse(restaurant: {
-    id: string;
-    name: string;
-    street: string;
-    city: string;
-    zipCode: string;
-    country: string;
-    cuisineType: CuisineType;
-    rating: number;
-    averagePrice: number;
-    phoneNumber: string | null;
-    countryCode: string | null;
-    localNumber: string | null;
-    description: string | null;
-    isOpen: boolean;
-    ownerId: number;
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
+  private buildFieldSelection(fields?: string) {
+    const responseFields = this.parseRequestedFields(fields);
+    const fieldsToSelect = responseFields ?? [...this.defaultListFields];
+    const select: Prisma.RestaurantSelect = {};
+
+    for (const field of fieldsToSelect) {
+      switch (field) {
+        case 'id':
+        case 'name':
+        case 'rating':
+        case 'averagePrice':
+        case 'phoneNumber':
+        case 'countryCode':
+        case 'localNumber':
+        case 'description':
+        case 'isOpen':
+        case 'ownerId':
+        case 'createdAt':
+        case 'updatedAt':
+          select[field] = true;
+          break;
+        case 'cuisine':
+        case 'cuisineType':
+          select.cuisineType = true;
+          break;
+        case 'address':
+          select.street = true;
+          select.city = true;
+          select.zipCode = true;
+          select.country = true;
+          break;
+      }
+    }
+
     return {
-      id: restaurant.id,
-      name: restaurant.name,
-      address: `${restaurant.street}, ${restaurant.zipCode} ${restaurant.city}, ${restaurant.country}`,
-      cuisine: restaurant.cuisineType,
-      cuisineType: restaurant.cuisineType,
-      rating: restaurant.rating,
-      averagePrice: restaurant.averagePrice,
-      phoneNumber: restaurant.phoneNumber ?? undefined,
-      countryCode: restaurant.countryCode ?? undefined,
-      localNumber: restaurant.localNumber ?? undefined,
-      description: restaurant.description ?? undefined,
-      isOpen: restaurant.isOpen,
-      ownerId: restaurant.ownerId,
-      createdAt: restaurant.createdAt,
-      updatedAt: restaurant.updatedAt,
+      responseFields,
+      select,
+      cacheFields: responseFields ? [...responseFields].sort() : [],
     };
+  }
+
+  private buildDefaultListSelect(): Prisma.RestaurantSelect {
+    return this.buildFieldSelection().select;
+  }
+
+  private parseRequestedFields(fields?: string): string[] | null {
+    if (!fields) {
+      return null;
+    }
+
+    const requestedFields = [...new Set(fields.split(',').map((field) => field.trim()))]
+      .filter(Boolean);
+
+    if (requestedFields.length === 0) {
+      return null;
+    }
+
+    const invalidFields = requestedFields.filter(
+      (field) => !this.allowedListFields.has(field),
+    );
+
+    if (invalidFields.length > 0) {
+      throw new BadRequestException(
+        `Invalid fields: ${invalidFields.join(', ')}. Allowed fields: ${[...this.allowedListFields].join(', ')}`,
+      );
+    }
+
+    return requestedFields;
+  }
+
+  private toRestaurantResponse(
+    restaurant: Partial<{
+      id: string;
+      name: string;
+      street: string;
+      city: string;
+      zipCode: string;
+      country: string;
+      cuisineType: CuisineType;
+      rating: number;
+      averagePrice: number;
+      phoneNumber: string | null;
+      countryCode: string | null;
+      localNumber: string | null;
+      description: string | null;
+      isOpen: boolean;
+      ownerId: number;
+      createdAt: Date;
+      updatedAt: Date;
+    }>,
+    responseFields?: string[] | null,
+  ) {
+    const shouldInclude = (field: string) =>
+      !responseFields || responseFields.includes(field);
+
+    const response: Record<string, unknown> = {};
+
+    if (shouldInclude('id')) response.id = restaurant.id;
+    if (shouldInclude('name')) response.name = restaurant.name;
+    if (shouldInclude('address')) {
+      response.address = `${restaurant.street}, ${restaurant.zipCode} ${restaurant.city}, ${restaurant.country}`;
+    }
+    if (shouldInclude('cuisine')) response.cuisine = restaurant.cuisineType;
+    if (shouldInclude('cuisineType'))
+      response.cuisineType = restaurant.cuisineType;
+    if (shouldInclude('rating')) response.rating = restaurant.rating;
+    if (shouldInclude('averagePrice'))
+      response.averagePrice = restaurant.averagePrice;
+    if (shouldInclude('phoneNumber') && restaurant.phoneNumber !== undefined) {
+      response.phoneNumber = restaurant.phoneNumber ?? undefined;
+    }
+    if (shouldInclude('countryCode') && restaurant.countryCode !== undefined) {
+      response.countryCode = restaurant.countryCode ?? undefined;
+    }
+    if (shouldInclude('localNumber') && restaurant.localNumber !== undefined) {
+      response.localNumber = restaurant.localNumber ?? undefined;
+    }
+    if (shouldInclude('description') && restaurant.description !== undefined) {
+      response.description = restaurant.description ?? undefined;
+    }
+    if (shouldInclude('isOpen')) response.isOpen = restaurant.isOpen;
+    if (shouldInclude('ownerId')) response.ownerId = restaurant.ownerId;
+    if (shouldInclude('createdAt')) response.createdAt = restaurant.createdAt;
+    if (shouldInclude('updatedAt')) response.updatedAt = restaurant.updatedAt;
+
+    return response;
   }
 }

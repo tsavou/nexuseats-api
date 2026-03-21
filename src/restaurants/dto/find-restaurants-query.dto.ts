@@ -87,4 +87,12 @@ export class FindRestaurantsQueryDto {
   @Transform(({ value }) => toBoolean(value))
   @IsBoolean()
   isOpen?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'Liste des champs à retourner, séparés par des virgules. Exemple: id,name,cuisine,rating',
+    example: 'id,name,cuisine,rating',
+  })
+  @IsOptional()
+  fields?: string;
 }

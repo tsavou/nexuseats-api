@@ -3,12 +3,19 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
+import * as compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
   app.setGlobalPrefix('api');
+  app.use(
+    compression({
+      threshold: 1024,
+      level: 6,
+    }),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({

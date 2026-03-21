@@ -15,11 +15,15 @@ export class PrismaService
     if (!connectionString) {
       throw new Error('DATABASE_URL is not defined');
     }
+    const shouldLogQueries = process.env.NODE_ENV !== 'test';
 
     const pool = new Pool({ connectionString });
     const adapter = new PrismaPg(pool);
 
-    super({ adapter });
+    super({
+      adapter,
+      log: shouldLogQueries ? ['query'] : [],
+    });
     this.pool = pool;
   }
 
