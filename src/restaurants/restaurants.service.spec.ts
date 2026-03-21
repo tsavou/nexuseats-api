@@ -33,6 +33,7 @@ describe('RestaurantsService', () => {
     id: restaurant.id,
     name: restaurant.name,
     address: `${restaurant.street}, ${restaurant.zipCode} ${restaurant.city}, ${restaurant.country}`,
+    cuisine: restaurant.cuisineType,
     cuisineType: restaurant.cuisineType,
     rating: restaurant.rating,
     averagePrice: restaurant.averagePrice,
@@ -70,8 +71,31 @@ describe('RestaurantsService', () => {
   };
 
   beforeEach(async () => {
-    jest.clearAllMocks();
+    prismaMock.$transaction.mockReset();
+    prismaMock.restaurant.count.mockReset();
+    prismaMock.restaurant.findMany.mockReset();
+    prismaMock.restaurant.findFirst.mockReset();
+    prismaMock.restaurant.create.mockReset();
+    prismaMock.restaurant.update.mockReset();
+    cacheManagerMock.get.mockReset();
+    cacheManagerMock.set.mockReset();
+    cacheManagerMock.del.mockReset();
+    redisKeysMock.mockReset();
+
     redisKeysMock.mockResolvedValue([]);
+    prismaMock.$transaction.mockImplementation(async (input: any) => {
+      if (Array.isArray(input)) {
+        return Promise.all(input);
+      }
+
+      return input({
+        $executeRaw: jest.fn().mockResolvedValue(undefined),
+        restaurant: {
+          findFirst: prismaMock.restaurant.findFirst,
+          create: prismaMock.restaurant.create,
+        },
+      });
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -295,7 +319,7 @@ describe('RestaurantsService', () => {
   });
 
   it('create throws ConflictException when the same name and address already exist', async () => {
-    prismaMock.restaurant.findFirst.mockResolvedValue({ id: restaurant.id });
+    prismaMock.restaurant.findFirst.mockResolvedValueOnce({ id: restaurant.id });
 
     await expect(
       service.create({

@@ -70,7 +70,7 @@ jobs:
       - run: npx prisma migrate deploy
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/nexuseats_test
-      - run: npm run test:e2e -- --runInBand
+      - run: npm run test:e2e -- --runInBand --forceExit
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/nexuseats_test
           DATABASE_URL_TEST: postgresql://test:test@localhost:5432/nexuseats_test
@@ -114,7 +114,8 @@ jobs:
       - run: npx prisma migrate deploy
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/nexuseats_test
-      - run: npm run test:contract
+      - run: npm run test:contract:consumer
+      - run: npm run test:contract:provider -- --forceExit
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/nexuseats_test
           DATABASE_URL_TEST: postgresql://test:test@localhost:5432/nexuseats_test
