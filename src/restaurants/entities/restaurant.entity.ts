@@ -33,6 +33,13 @@ export class Restaurant {
  })
  cuisineType: CuisineType;
 
+ @ApiProperty({
+ description: 'Alias front du type de cuisine',
+ enum: CuisineType,
+ example: CuisineType.ITALIENNE,
+ })
+ cuisine: CuisineType;
+
  @ApiPropertyOptional({
  description: 'Note moyenne du restaurant (sur 5)',
  example: 4.2,

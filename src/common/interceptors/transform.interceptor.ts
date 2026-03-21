@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export interface Response<T> {
   success: boolean;
@@ -27,7 +27,7 @@ export class TransformInterceptor<T>
     const request = ctx.getRequest();
 
     if (!request.requestId) {
-      request.requestId = uuidv4();
+      request.requestId = randomUUID();
     }
     const requestId = request.requestId;
 

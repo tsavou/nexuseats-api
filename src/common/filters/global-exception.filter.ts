@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -21,7 +21,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     
     // Assure un requestId même s'il n'a pas été défini
     if (!request['requestId']) {
-      request['requestId'] = uuidv4();
+      request['requestId'] = randomUUID();
     }
     const requestId = request['requestId'];
 

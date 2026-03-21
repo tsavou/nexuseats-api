@@ -2,6 +2,12 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/tsavou/nexuseats-api/actions/workflows/ci.yml">
+    <img src="https://github.com/tsavou/nexuseats-api/actions/workflows/ci.yml/badge.svg" alt="CI status" />
+  </a>
+</p>
+
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
 

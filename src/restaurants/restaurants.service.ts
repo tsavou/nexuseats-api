@@ -314,6 +314,7 @@ export class RestaurantsService {
       id: restaurant.id,
       name: restaurant.name,
       address: `${restaurant.street}, ${restaurant.zipCode} ${restaurant.city}, ${restaurant.country}`,
+      cuisine: restaurant.cuisineType,
       cuisineType: restaurant.cuisineType,
       rating: restaurant.rating,
       averagePrice: restaurant.averagePrice,
