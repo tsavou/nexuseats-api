@@ -13,12 +13,11 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,  // disponible partout
-      envFilePath: '.env',  // lit .env à la racine
+      isGlobal: true, // disponible partout
+      envFilePath: '.env', // lit .env à la racine
     }),
 
     RedisCacheModule,
@@ -27,8 +26,6 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     MenuItemsModule,
     PrismaModule,
     AuthModule,
-
-
   ],
   controllers: [AppController],
   providers: [
@@ -47,5 +44,4 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     },
   ],
 })
-
 export class AppModule {}

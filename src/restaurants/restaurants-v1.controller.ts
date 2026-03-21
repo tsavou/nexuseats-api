@@ -1,8 +1,18 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Param, Body, Query, HttpCode, HttpStatus, ParseUUIDPipe,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+  HttpCode,
+  HttpStatus,
+  ParseUUIDPipe,
   Version,
-  Header, UseGuards,
+  Header,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -15,7 +25,15 @@ import { CreateRestaurantDto } from './dto/create-restaurant-v1.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant-v1.dto';
 import { Restaurant } from './entities/restaurant.entity';
 import { FindRestaurantsQueryDto } from './dto/find-restaurants-query.dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 /**
  * Controller Restaurants — routes HTTP du CRUD.
@@ -29,7 +47,6 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, 
 @Controller({ path: 'restaurants', version: '1' })
 @ApiTags('restaurants-v1')
 export class RestaurantsV1Controller {
-
   // Injection du service via le constructeur (DI)
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
@@ -59,29 +76,29 @@ export class RestaurantsV1Controller {
     type: Number,
     description: "Nombre d'éléments par page (défaut : 10, max : 100)",
     example: 10,
- })
- @ApiQuery({
+  })
+  @ApiQuery({
     name: 'cuisineType',
     required: false,
     type: String,
     description: 'Filtre type de cuisine',
     example: 'ITALIENNE',
- })
- @ApiQuery({
+  })
+  @ApiQuery({
     name: 'ratingMin',
     required: false,
     type: Number,
     description: 'Filtre note minimale',
     example: 4,
- })
- @ApiQuery({
+  })
+  @ApiQuery({
     name: 'isOpen',
     required: false,
     type: Boolean,
     description: "Filtre statut d'ouverture",
     example: true,
- })
- @ApiResponse({
+  })
+  @ApiResponse({
     status: 200,
     description: 'Liste paginée retournée avec succès',
     schema: {
@@ -150,7 +167,7 @@ export class RestaurantsV1Controller {
         error: 'Not Found',
       },
     },
- })
+  })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     // ParseUUIDPipe valide que l'ID est un UUID valide
     // Si invalide → 400 Bad Request automatiquement
@@ -172,7 +189,7 @@ export class RestaurantsV1Controller {
     deprecated: true,
     description:
       'DEPRECATED: Utilisez /v2/restaurants. Cette route utilise le champ global phoneNumber.',
- })
+  })
   @Header('Deprecation', 'true')
   @Header('Link', '</v2/restaurants>; rel="successor-version"')
   @ApiBody({ type: CreateRestaurantDto })
@@ -193,8 +210,8 @@ export class RestaurantsV1Controller {
         ],
         error: 'Bad Request',
       },
-  },
- })
+    },
+  })
   @ApiResponse({
     status: 409,
     description: 'Restaurant déjà existant (même nom + même adresse)',
@@ -271,7 +288,7 @@ export class RestaurantsV1Controller {
     const data: Prisma.RestaurantUpdateInput = {};
 
     if (dto.name !== undefined) data.name = dto.name;
-    
+
     if (dto.address !== undefined) {
       data.street = dto.address.street;
       data.city = dto.address.city;

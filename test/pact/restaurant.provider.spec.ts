@@ -3,11 +3,7 @@ import { Verifier } from '@pact-foundation/pact';
 import { CuisineType } from '@prisma/client';
 import * as path from 'node:path';
 import { PrismaService } from '../../src/prisma/prisma.service';
-import {
-  bootstrapTestApp,
-  cleanupDatabase,
-  closeTestApp,
-} from './test-app';
+import { bootstrapTestApp, cleanupDatabase, closeTestApp } from './test-app';
 
 describe('Restaurant provider verification', () => {
   let app: INestApplication | undefined;

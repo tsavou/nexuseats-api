@@ -41,7 +41,9 @@ describe('JwtAuthGuard', () => {
   });
 
   it('throws UnauthorizedException when passport returns no user', () => {
-    expect(() => guard.handleRequest(null, null)).toThrow(UnauthorizedException);
+    expect(() => guard.handleRequest(null, null)).toThrow(
+      UnauthorizedException,
+    );
   });
 
   it('rethrows the underlying auth error when passport fails', () => {

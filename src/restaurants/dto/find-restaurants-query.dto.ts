@@ -30,7 +30,11 @@ function toBoolean(value: unknown): unknown {
 }
 
 export class FindRestaurantsQueryDto {
-  @ApiPropertyOptional({ description: 'Numéro de page', default: 1, minimum: 1 })
+  @ApiPropertyOptional({
+    description: 'Numéro de page',
+    default: 1,
+    minimum: 1,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -56,7 +60,9 @@ export class FindRestaurantsQueryDto {
     enum: CuisineType,
   })
   @IsOptional()
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toUpperCase() : value))
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : value,
+  )
   @IsEnum(CuisineType)
   cuisineType?: CuisineType;
 

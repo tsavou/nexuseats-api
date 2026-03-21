@@ -1,8 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import {
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CuisineType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -178,7 +175,9 @@ describe('RestaurantsService', () => {
 
     cacheManagerMock.get.mockResolvedValue(cachedRestaurant);
 
-    await expect(service.findOne(restaurant.id)).resolves.toEqual(cachedRestaurant);
+    await expect(service.findOne(restaurant.id)).resolves.toEqual(
+      cachedRestaurant,
+    );
     expect(cacheManagerMock.get).toHaveBeenCalledWith(
       `restaurants:detail:${restaurant.id}`,
     );
@@ -260,7 +259,9 @@ describe('RestaurantsService', () => {
     cacheManagerMock.get.mockResolvedValue(undefined);
     prismaMock.restaurant.findFirst.mockResolvedValue(null);
 
-    await expect(service.findOne('missing-id')).rejects.toThrow(NotFoundException);
+    await expect(service.findOne('missing-id')).rejects.toThrow(
+      NotFoundException,
+    );
     expect(cacheManagerMock.set).not.toHaveBeenCalled();
   });
 
@@ -288,7 +289,9 @@ describe('RestaurantsService', () => {
     expect(prismaMock.restaurant.create).toHaveBeenCalledWith({ data: dto });
     expect(redisKeysMock).toHaveBeenCalledWith('restaurants:list:*');
     expect(cacheManagerMock.del).toHaveBeenCalledWith('restaurants:list:{}');
-    expect(cacheManagerMock.del).toHaveBeenCalledWith('restaurants:list:{"page":1}');
+    expect(cacheManagerMock.del).toHaveBeenCalledWith(
+      'restaurants:list:{"page":1}',
+    );
   });
 
   it('create throws ConflictException when the same name and address already exist', async () => {
@@ -310,14 +313,18 @@ describe('RestaurantsService', () => {
   });
 
   it('update persists changes and invalidates detail and list caches', async () => {
-    prismaMock.restaurant.findFirst.mockResolvedValueOnce({ id: restaurant.id });
+    prismaMock.restaurant.findFirst.mockResolvedValueOnce({
+      id: restaurant.id,
+    });
     prismaMock.restaurant.update.mockResolvedValue({
       ...restaurant,
       name: 'Nexus Pasta Prime',
     });
     redisKeysMock.mockResolvedValue(['restaurants:list:{}']);
 
-    const result = await service.update(restaurant.id, { name: 'Nexus Pasta Prime' });
+    const result = await service.update(restaurant.id, {
+      name: 'Nexus Pasta Prime',
+    });
 
     expect(prismaMock.restaurant.update).toHaveBeenCalledWith({
       where: { id: restaurant.id },
@@ -343,7 +350,9 @@ describe('RestaurantsService', () => {
   });
 
   it('softDelete marks the restaurant as deleted and invalidates caches', async () => {
-    prismaMock.restaurant.findFirst.mockResolvedValueOnce({ id: restaurant.id });
+    prismaMock.restaurant.findFirst.mockResolvedValueOnce({
+      id: restaurant.id,
+    });
     prismaMock.restaurant.update.mockResolvedValue(undefined);
     redisKeysMock.mockResolvedValue(['restaurants:list:{}']);
 
@@ -361,7 +370,9 @@ describe('RestaurantsService', () => {
   it('softDelete throws NotFoundException when restaurant is already absent', async () => {
     prismaMock.restaurant.findFirst.mockResolvedValue(null);
 
-    await expect(service.softDelete('ghost-id')).rejects.toThrow(NotFoundException);
+    await expect(service.softDelete('ghost-id')).rejects.toThrow(
+      NotFoundException,
+    );
     expect(prismaMock.restaurant.update).not.toHaveBeenCalled();
   });
 

@@ -1,7 +1,17 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Param, Body, Query, HttpCode, HttpStatus, ParseUUIDPipe,
-  Version, UseGuards,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+  HttpCode,
+  HttpStatus,
+  ParseUUIDPipe,
+  Version,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -14,7 +24,15 @@ import { CreateRestaurantV2Dto } from './dto/create-restaurant-v2.dto';
 import { UpdateRestaurantV2Dto } from './dto/update-restaurant-v2.dto';
 import { Restaurant } from './entities/restaurant.entity';
 import { FindRestaurantsQueryDto } from './dto/find-restaurants-query.dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 /**
  * Controller Restaurants — routes HTTP du CRUD.
@@ -28,7 +46,6 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, 
 @Controller({ path: 'restaurants', version: '2' })
 @ApiTags('restaurants-v2')
 export class RestaurantsV2Controller {
-
   // Injection du service via le constructeur (DI)
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
@@ -56,29 +73,29 @@ export class RestaurantsV2Controller {
     type: Number,
     description: "Nombre d'éléments par page (défaut : 10, max : 100)",
     example: 10,
- })
- @ApiQuery({
+  })
+  @ApiQuery({
     name: 'cuisineType',
     required: false,
     type: String,
     description: 'Filtre type de cuisine',
     example: 'ITALIENNE',
- })
- @ApiQuery({
+  })
+  @ApiQuery({
     name: 'ratingMin',
     required: false,
     type: Number,
     description: 'Filtre note minimale',
     example: 4,
- })
- @ApiQuery({
+  })
+  @ApiQuery({
     name: 'isOpen',
     required: false,
     type: Boolean,
     description: "Filtre statut d'ouverture",
     example: true,
- })
- @ApiResponse({
+  })
+  @ApiResponse({
     status: 200,
     description: 'Liste paginée retournée avec succès',
     schema: {
@@ -144,7 +161,7 @@ export class RestaurantsV2Controller {
         error: 'Not Found',
       },
     },
- })
+  })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     // ParseUUIDPipe valide que l'ID est un UUID valide
     // Si invalide → 400 Bad Request automatiquement
@@ -166,7 +183,7 @@ export class RestaurantsV2Controller {
     description:
       'Ajoute un restaurant partenaire à la plateforme NexusEats. ' +
       'Vérifie les doublons (même nom + même adresse).',
- })
+  })
   @ApiBody({ type: CreateRestaurantV2Dto })
   @ApiResponse({
     status: 201,
@@ -185,8 +202,8 @@ export class RestaurantsV2Controller {
         ],
         error: 'Bad Request',
       },
-  },
- })
+    },
+  })
   @ApiResponse({
     status: 409,
     description: 'Restaurant déjà existant (même nom + même adresse)',
@@ -292,7 +309,8 @@ export class RestaurantsV2Controller {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Supprimer un restaurant (soft delete)',
-    description: 'Masque le restaurant via deletedAt sans suppression physique.',
+    description:
+      'Masque le restaurant via deletedAt sans suppression physique.',
   })
   @ApiParam({
     name: 'id',

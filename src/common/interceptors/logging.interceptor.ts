@@ -31,7 +31,7 @@ export class LoggingInterceptor implements NestInterceptor {
       tap(() => {
         const duration = Date.now() - now;
         const statusCode = ctx.getResponse().statusCode;
-        
+
         const logMessage = `[${requestId}] Request: ${method} ${url} - Status: ${statusCode} - Duration: ${duration}ms`;
 
         if (duration > 1000) {

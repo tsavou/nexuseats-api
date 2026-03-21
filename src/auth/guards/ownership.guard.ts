@@ -1,4 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -11,13 +17,13 @@ export class OwnershipGuard implements CanActivate {
     const restaurantId = request.params.id;
 
     if (!user) return false;
-    
+
     // Admin peut tout modifier
     if (user.role === 'admin') return true;
 
     const restaurant = await this.prisma.restaurant.findUnique({
       where: { id: restaurantId },
-      select: { ownerId: true }
+      select: { ownerId: true },
     });
 
     if (!restaurant) {
@@ -25,7 +31,9 @@ export class OwnershipGuard implements CanActivate {
     }
 
     if (restaurant.ownerId !== user.id) {
-      throw new ForbiddenException("Vous n'êtes pas le propriétaire de ce restaurant");
+      throw new ForbiddenException(
+        "Vous n'êtes pas le propriétaire de ce restaurant",
+      );
     }
 
     return true;

@@ -12,7 +12,6 @@ import {
   ValidateNested,
   IsEmail,
   IsArray,
-  Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CuisineType } from '@prisma/client';
@@ -30,7 +29,6 @@ import { OpeningHourDto } from './opening-hour.dto';
  * Les deux sont nécessaires : @ApiProperty documente, class-validator valide.
  */
 export class CreateRestaurantV2Dto {
-
   @ApiProperty({
     description: 'Nom du restaurant',
     example: 'La Bella Italia',
@@ -43,7 +41,10 @@ export class CreateRestaurantV2Dto {
   @MaxLength(100)
   name: string;
 
-  @ApiProperty({ type: () => AddressDto, description: 'Adresse complète du restaurant' })
+  @ApiProperty({
+    type: () => AddressDto,
+    description: 'Adresse complète du restaurant',
+  })
   @ValidateNested()
   @Type(() => AddressDto)
   @IsNotEmpty({ message: "L'adresse est obligatoire" })
@@ -83,10 +84,9 @@ export class CreateRestaurantV2Dto {
   @Max(500)
   averagePrice: number;
 
-
   @ApiProperty({ example: '+33', description: 'Indicatif pays' })
   @IsString()
-  @IsNotEmpty({ message: 'L\'indicatif pays est obligatoire' })
+  @IsNotEmpty({ message: "L'indicatif pays est obligatoire" })
   @MinLength(2)
   @MaxLength(3)
   countryCode: string;
@@ -102,13 +102,11 @@ export class CreateRestaurantV2Dto {
     description: 'Email de contact du restaurant',
     example: 'contact@labellaitalia.fr',
   })
-  @IsEmail({}, { message: 'L\'email doit être valide' })
+  @IsEmail({}, { message: "L'email doit être valide" })
   email: string;
 
-
-
   @ApiPropertyOptional({
-    description: 'Horaires d\'ouverture',
+    description: "Horaires d'ouverture",
     type: [OpeningHourDto],
   })
   @IsOptional()
@@ -117,7 +115,7 @@ export class CreateRestaurantV2Dto {
   @Type(() => OpeningHourDto)
   @IsOpeningHoursValid()
   openingHours?: OpeningHourDto[];
-  
+
   @ApiPropertyOptional({
     description: 'Description courte du restaurant',
     example: 'Restaurant italien authentique au coeur de Paris',

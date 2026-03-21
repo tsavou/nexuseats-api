@@ -11,7 +11,13 @@ import {
   Post,
   Version,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
 import { UpdateMenuItemCategoriesDto } from './dto/update-menu-item-categories.dto';
 import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
@@ -69,7 +75,7 @@ export class MenuItemsController {
   @ApiOperation({
     summary: 'Créer un item de menu',
     description:
-      "Crée un item dans un menu actif et peut connecter des catégories via categoryIds.",
+      'Crée un item dans un menu actif et peut connecter des catégories via categoryIds.',
   })
   @ApiParam({
     name: 'menuId',
@@ -170,7 +176,7 @@ export class MenuItemsController {
   @ApiOperation({
     summary: 'Connecter / déconnecter des catégories',
     description:
-      "Met à jour les relations N:M entre un item et des catégories via connectIds / disconnectIds.",
+      'Met à jour les relations N:M entre un item et des catégories via connectIds / disconnectIds.',
   })
   @ApiParam({
     name: 'menuId',

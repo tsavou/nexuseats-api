@@ -3,7 +3,6 @@ import {
   ValidationOptions,
   ValidatorConstraint,
   ValidatorConstraintInterface,
-  ValidationArguments,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -13,7 +12,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class IsUniqueRestaurantNameConstraint implements ValidatorConstraintInterface {
   constructor(private readonly prisma: PrismaService) {}
 
-  async validate(name: string, args: ValidationArguments) {
+  async validate(name: string) {
     if (!name) return true; // on laisse @IsNotEmpty gérer si c'est vide
 
     const restaurant = await this.prisma.restaurant.findFirst({
@@ -24,13 +23,13 @@ export class IsUniqueRestaurantNameConstraint implements ValidatorConstraintInte
     return !restaurant;
   }
 
-  defaultMessage(args: ValidationArguments) {
+  defaultMessage() {
     return 'Le nom du restaurant "$value" existe déjà.';
   }
 }
 
 export function IsUniqueRestaurantName(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,

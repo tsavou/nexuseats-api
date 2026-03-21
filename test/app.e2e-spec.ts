@@ -5,16 +5,16 @@ import {
   VersioningType,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { config as loadEnv } from 'dotenv';
 import { execSync } from 'node:child_process';
 import { Pool } from 'pg';
 import * as request from 'supertest';
 import { useContainer } from 'class-validator';
 import { PrismaService } from '../src/prisma/prisma.service';
 
-const { config: loadEnv } = require('dotenv');
-
 loadEnv({ path: '.env.test', quiet: true });
-process.env.DATABASE_URL = process.env.DATABASE_URL_TEST ?? process.env.DATABASE_URL;
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL_TEST ?? process.env.DATABASE_URL;
 process.env.NODE_ENV = 'test';
 
 type MemoryCacheEntry = {
@@ -267,7 +267,10 @@ describe('NexusEats API (e2e)', () => {
       description: 'Restaurant de test e2e',
     });
 
-    const registerAndLogin = async (role: 'owner' | 'customer', email: string) => {
+    const registerAndLogin = async (
+      role: 'owner' | 'customer',
+      email: string,
+    ) => {
       await request(app.getHttpServer())
         .post(`${authBasePath}/register`)
         .send({

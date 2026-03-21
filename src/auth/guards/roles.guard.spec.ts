@@ -38,8 +38,8 @@ describe('RolesGuard', () => {
   it('throws ForbiddenException when the user role is insufficient', () => {
     reflector.getAllAndOverride.mockReturnValue(['admin']);
 
-    expect(() => guard.canActivate(createContext({ role: 'customer' }))).toThrow(
-      ForbiddenException,
-    );
+    expect(() =>
+      guard.canActivate(createContext({ role: 'customer' })),
+    ).toThrow(ForbiddenException);
   });
 });

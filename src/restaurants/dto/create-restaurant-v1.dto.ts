@@ -31,7 +31,6 @@ import { OpeningHourDto } from './opening-hour.dto';
  * Les deux sont nécessaires : @ApiProperty documente, class-validator valide.
  */
 export class CreateRestaurantDto {
-
   @ApiProperty({
     description: 'Nom du restaurant',
     example: 'La Bella Italia',
@@ -45,7 +44,10 @@ export class CreateRestaurantDto {
   @IsUniqueRestaurantName()
   name: string;
 
-  @ApiProperty({ type: () => AddressDto, description: 'Adresse complète du restaurant' })
+  @ApiProperty({
+    type: () => AddressDto,
+    description: 'Adresse complète du restaurant',
+  })
   @ValidateNested()
   @Type(() => AddressDto)
   @IsNotEmpty({ message: "L'adresse est obligatoire" })
@@ -90,20 +92,21 @@ export class CreateRestaurantDto {
     example: '+33142612345',
   })
   @IsString()
-  @Matches(/^\+?[0-9]{10,15}$/, { message: 'Le format du téléphone doit être international (ex: +33123456789)' })
+  @Matches(/^\+?[0-9]{10,15}$/, {
+    message:
+      'Le format du téléphone doit être international (ex: +33123456789)',
+  })
   phone: string;
 
   @ApiProperty({
     description: 'Email de contact du restaurant',
     example: 'contact@labellaitalia.fr',
   })
-  @IsEmail({}, { message: 'L\'email doit être valide' })
+  @IsEmail({}, { message: "L'email doit être valide" })
   email: string;
 
-
-
   @ApiPropertyOptional({
-    description: 'Horaires d\'ouverture',
+    description: "Horaires d'ouverture",
     type: [OpeningHourDto],
   })
   @IsOptional()
@@ -112,7 +115,7 @@ export class CreateRestaurantDto {
   @Type(() => OpeningHourDto)
   @IsOpeningHoursValid()
   openingHours?: OpeningHourDto[];
-  
+
   @ApiPropertyOptional({
     description: 'Description courte du restaurant',
     example: 'Restaurant italien authentique au coeur de Paris',

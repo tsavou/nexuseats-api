@@ -18,7 +18,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request & { requestId?: string }>();
-    
+
     // Assure un requestId même s'il n'a pas été défini
     if (!request['requestId']) {
       request['requestId'] = randomUUID();
