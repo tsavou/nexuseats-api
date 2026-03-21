@@ -16,6 +16,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci --legacy-peer-deps
+      - run: npm run prisma:generate
       - run: npm run lint
       - run: npm run build
 
@@ -29,6 +30,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci --legacy-peer-deps
+      - run: npm run prisma:generate
       - run: npm run test -- --coverage --runInBand
 
   integration-tests:
@@ -64,6 +66,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci --legacy-peer-deps
+      - run: npm run prisma:generate
       - run: npx prisma migrate deploy
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/nexuseats_test
@@ -107,6 +110,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci --legacy-peer-deps
+      - run: npm run prisma:generate
       - run: npx prisma migrate deploy
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/nexuseats_test
