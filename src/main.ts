@@ -4,8 +4,12 @@ import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
 import * as compression from 'compression';
+import { availableParallelism } from 'node:os';
+import type { Cluster, Worker } from 'cluster';
 
-async function bootstrap() {
+const cluster: Cluster = require('cluster');
+
+async function bootstrapWorker() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
@@ -68,9 +72,38 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  logger.log(`🚀 NexusEats API running on http://localhost:${port}/api/v1`);
+  logger.log(
+    `🚀 Worker ${process.pid} running NexusEats API on http://localhost:${port}/api/v1`,
+  );
   logger.log(
     `📚 Swagger documentation available at http://localhost:${port}/api-docs`,
   );
 }
-bootstrap();
+
+function bootstrapCluster() {
+  const logger = new Logger('Cluster');
+
+  if (cluster.isPrimary) {
+    const workerCount = availableParallelism();
+    logger.log(
+      `Primary ${process.pid} starting ${workerCount} workers for clustering`,
+    );
+
+    for (let index = 0; index < workerCount; index += 1) {
+      cluster.fork();
+    }
+
+    cluster.on('exit', (worker: Worker, code: number, signal: string) => {
+      logger.warn(
+        `Worker ${worker.process.pid} died (code=${code}, signal=${signal ?? 'none'}). Restarting...`,
+      );
+      cluster.fork();
+    });
+
+    return;
+  }
+
+  void bootstrapWorker();
+}
+
+bootstrapCluster();

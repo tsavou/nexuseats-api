@@ -4,9 +4,11 @@ import {
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { randomUUID } from 'crypto';
+import { SKIP_TRANSFORM_KEY } from '../decorators/skip-transform.decorator';
 
 export interface Response<T> {
   success: boolean;
@@ -16,14 +18,24 @@ export interface Response<T> {
 }
 
 @Injectable()
-export class TransformInterceptor<T> implements NestInterceptor<
-  T,
-  Response<T>
-> {
+export class TransformInterceptor<T>
+  implements NestInterceptor<T, Response<T> | T>
+{
+  constructor(private readonly reflector: Reflector) {}
+
   intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Observable<Response<T>> {
+  ): Observable<Response<T> | T> {
+    const skipTransform = this.reflector.getAllAndOverride<boolean>(
+      SKIP_TRANSFORM_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (skipTransform) {
+      return next.handle();
+    }
+
     const ctx = context.switchToHttp();
     const request = ctx.getRequest();
 

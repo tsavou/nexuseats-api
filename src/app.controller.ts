@@ -1,16 +1,6 @@
-import { Controller, Get, VERSION_NEUTRAL } from '@nestjs/common';
-import { SkipThrottle } from '@nestjs/throttler';
-import { AppService } from './app.service';
+import { Controller } from '@nestjs/common';
 
-@Controller({
-  version: VERSION_NEUTRAL,
-})
+@Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
-  @Get('health')
-  @SkipThrottle()
-  getHealth() {
-    return this.appService.getHealth();
-  }
+  constructor() {}
 }

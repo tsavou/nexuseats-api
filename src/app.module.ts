@@ -13,6 +13,8 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { HealthModule } from './health/health.module';
+import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 
 @Module({
   imports: [
@@ -46,6 +48,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     MenuItemsModule,
     PrismaModule,
     AuthModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -61,6 +64,10 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MetricsInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
