@@ -15,6 +15,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { HealthModule } from './health/health.module';
 import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
+import { OrdersGatewayModule } from './orders-gateway/orders-gateway.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
     PrismaModule,
     AuthModule,
     HealthModule,
+    OrdersGatewayModule,
   ],
   controllers: [AppController],
   providers: [
