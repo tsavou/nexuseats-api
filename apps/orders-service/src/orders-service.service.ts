@@ -1,4 +1,5 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
 import { CreateOrderDto } from './dto/create-order.dto';
 
@@ -20,6 +21,10 @@ export class OrdersServiceService {
   private readonly logger = new Logger(OrdersServiceService.name);
   private readonly orders: Order[] = [];
 
+  constructor(
+    @Inject('ORDERS_EVENTS') private readonly ordersEventsClient: ClientProxy,
+  ) {}
+
   create(dto: CreateOrderDto) {
     this.logger.log(
       `Received create_order for customer="${dto.customerName}" with ${dto.items.length} item(s)`,
@@ -35,6 +40,14 @@ export class OrdersServiceService {
 
     this.orders.push(order);
     this.logger.log(`Order created successfully with id=${order.id}`);
+    this.ordersEventsClient.emit('order.created', {
+      orderId: order.id,
+      customerEmail: `${dto.customerName.toLowerCase().replace(/\s+/g, '.')}@nexus.test`,
+      items: order.items,
+      total: order.totalAmount,
+      timestamp: new Date().toISOString(),
+    });
+    this.logger.log(`Event emitted: order.created for id=${order.id}`);
     return order;
   }
 
