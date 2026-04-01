@@ -23,7 +23,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MetricsService } from './metrics.service';
 import { AuthGuard } from '@nestjs/passport';
 import { SkipTransform } from '../common/decorators/skip-transform.decorator';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('health')
 @Controller({
   version: VERSION_NEUTRAL,
 })
@@ -43,6 +50,54 @@ export class HealthController {
   @SkipThrottle()
   @SkipTransform()
   @HealthCheck()
+  @ApiOperation({
+    summary: "Vérifier la santé de l'application",
+    description:
+      "Vérifie l'état de la base de données PostgreSQL, du cache Redis et de la mémoire heap. " +
+      'Endpoint public, non soumis au rate limiting.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Application en bonne santé',
+    schema: {
+      example: {
+        status: 'ok',
+        info: {
+          database: { status: 'up' },
+          redis: { status: 'up' },
+          memory: { status: 'up' },
+        },
+        error: {},
+        details: {
+          database: { status: 'up' },
+          redis: { status: 'up' },
+          memory: { status: 'up' },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 503,
+    description: 'Un ou plusieurs services sont indisponibles',
+    schema: {
+      example: {
+        status: 'error',
+        info: {
+          database: { status: 'up' },
+        },
+        error: {
+          redis: {
+            status: 'down',
+            message: 'Redis client unavailable',
+          },
+        },
+        details: {
+          database: { status: 'up' },
+          redis: { status: 'down', message: 'Redis client unavailable' },
+        },
+      },
+    },
+  })
   check() {
     return this.health.check([
       () => this.prismaHealth.pingCheck('database', this.prisma),
@@ -55,6 +110,40 @@ export class HealthController {
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin')
   @SkipTransform()
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: "Métriques du processus Node.js",
+    description:
+      "Retourne les métriques système du processus : uptime, mémoire, CPU. " +
+      "Réservé aux administrateurs uniquement.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Métriques récupérées avec succès',
+    schema: {
+      example: {
+        uptime: 3600,
+        memory: {
+          rss: 85000000,
+          heapTotal: 45000000,
+          heapUsed: 32000000,
+          external: 1200000,
+        },
+        cpu: {
+          user: 12500000,
+          system: 3400000,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Non autorisé (Token JWT manquant ou invalide)',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Accès refusé (rôle admin requis)',
+  })
   getMetrics() {
     return this.metricsService.getProcessMetrics();
   }
@@ -84,3 +173,4 @@ export class HealthController {
     }
   }
 }
+

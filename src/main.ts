@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ErrorResponseDto } from './common/dto/error-response.dto';
 import { useContainer } from 'class-validator';
 import * as compression from 'compression';
 import { availableParallelism } from 'node:os';
@@ -48,27 +49,54 @@ async function bootstrapWorker() {
 
   const config = new DocumentBuilder()
     .setTitle('NexusEats API')
-    .setDescription('API de livraison de repas NexusEats')
-    .setVersion('2.0')
-    .addTag(
-      'restaurants-v1',
-      '⚠️ [DEPRECATED] API utilisant le champ global phoneNumber',
+    .setDescription(
+      'API de livraison de repas NexusEats — plateforme complète pour ' +
+        'la gestion des restaurants, menus, commandes et authentification. ' +
+        'Utilisez le bouton **Authorize** ci-dessous pour tester les endpoints protégés avec votre JWT.',
     )
+    .setVersion('2.0')
+    .setContact(
+      'Équipe NexusEats',
+      'https://nexuseats.dev',
+      'api@nexuseats.dev',
+    )
+    .setLicense('MIT', 'https://opensource.org/licenses/MIT')
+    .addTag('auth', '🔐 Authentification JWT — inscription, connexion, profil')
     .addTag(
       'restaurants-v2',
-      '✅ [CURRENT] API utilisant countryCode et localNumber',
+      '✅ [CURRENT] CRUD restaurants avec countryCode/localNumber',
     )
-    .addTag('menus', 'API de gestion des menus')
-    .addTag('menu-items', 'API de gestion des items de menu')
-    .addTag('auth', 'Authentification JWT')
+    .addTag(
+      'restaurants-v1',
+      '⚠️ [DEPRECATED] CRUD restaurants avec phoneNumber global',
+    )
+    .addTag('menus', '📋 Gestion des menus rattachés aux restaurants')
+    .addTag('menu-items', '🍕 Gestion des items de menu et catégories')
+    .addTag('orders', '📦 Commandes via le gateway RabbitMQ')
+    .addTag('health', '💚 Santé de l\'application et métriques')
     .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'JWT-auth', // This is the name of the security requirement
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description:
+          'Entrez le token JWT obtenu via POST /api/auth/login. Format : Bearer <token>',
+      },
+      'JWT-auth',
     )
     .build();
 
-  const doc = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, doc);
+  const doc = SwaggerModule.createDocument(app, config, {
+    extraModels: [ErrorResponseDto],
+  });
+  SwaggerModule.setup('api-docs', app, doc, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      docExpansion: 'none',
+      filter: true,
+      tagsSorter: 'alpha',
+    },
+  });
 
   const port = process.env.PORT || 3000;
   await app.listen(port);

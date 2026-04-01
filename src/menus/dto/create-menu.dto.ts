@@ -15,7 +15,10 @@ export class CreateMenuDto {
   @MaxLength(100)
   name: string;
 
-  @ApiPropertyOptional({ description: 'Description du menu' })
+  @ApiPropertyOptional({
+    description: 'Description du menu',
+    example: 'Formule dejeuner italienne avec entree, plat et dessert',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(500)

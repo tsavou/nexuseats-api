@@ -69,6 +69,10 @@ export class MenusController {
     },
   })
   @ApiResponse({
+    status: 400,
+    description: 'UUID invalide (format incorrect)',
+  })
+  @ApiResponse({
     status: 404,
     description: 'Restaurant introuvable',
   })

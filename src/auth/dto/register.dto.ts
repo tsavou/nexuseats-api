@@ -28,6 +28,8 @@ export class RegisterDto {
     example: 'owner',
     description: "Le rôle de l'utilisateur",
     required: false,
+    enum: ['customer', 'owner'],
+    default: 'customer',
   })
   @IsOptional()
   @IsString()

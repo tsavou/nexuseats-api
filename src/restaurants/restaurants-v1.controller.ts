@@ -209,19 +209,27 @@ export class RestaurantsV1Controller {
     type: Restaurant,
   })
   @ApiResponse({
+    status: 400,
+    description: 'UUID invalide (format incorrect)',
+  })
+  @ApiResponse({
     status: 404,
     description: 'Restaurant introuvable',
     schema: {
       example: {
-        statusCode: 404,
-        message: 'Restaurant avec l\'ID "xxx" introuvable',
-        error: 'Not Found',
+        success: false,
+        error: {
+          statusCode: 404,
+          message: 'Restaurant avec l\'ID "xxx" introuvable',
+          error: 'Not Found',
+          timestamp: '2026-03-22T14:30:00.000Z',
+          path: '/api/v1/restaurants/xxx',
+          requestId: 'c3a5e7f2-1234-4abc-9def-567890abcdef',
+        },
       },
     },
   })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
-    // ParseUUIDPipe valide que l'ID est un UUID valide
-    // Si invalide → 400 Bad Request automatiquement
     return this.restaurantsService.findOne(id);
   }
 
@@ -229,7 +237,7 @@ export class RestaurantsV1Controller {
   // POST /restaurants → 201 Created
   // ─────────────────────────────────────────────
 
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('owner', 'admin')
   @Version('1')
@@ -254,23 +262,43 @@ export class RestaurantsV1Controller {
     description: 'Données invalides (validation échouée)',
     schema: {
       example: {
-        statusCode: 400,
-        message: [
-          'Le nom doit faire au moins 2 caractères',
-          'La note maximale est 5',
-        ],
-        error: 'Bad Request',
+        success: false,
+        error: {
+          statusCode: 400,
+          message: [
+            'Le nom doit faire au moins 2 caractères',
+            'La note maximale est 5',
+          ],
+          error: 'Bad Request',
+          timestamp: '2026-03-22T14:30:00.000Z',
+          path: '/api/v1/restaurants',
+          requestId: 'c3a5e7f2-1234-4abc-9def-567890abcdef',
+        },
       },
     },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Non autorisé (Token JWT manquant ou invalide)',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Accès refusé (rôle insuffisant)',
   })
   @ApiResponse({
     status: 409,
     description: 'Restaurant déjà existant (même nom + même adresse)',
     schema: {
       example: {
-        statusCode: 409,
-        message: 'Un restaurant avec ce nom et cette adresse existe déjà',
-        error: 'Conflict',
+        success: false,
+        error: {
+          statusCode: 409,
+          message: 'Un restaurant avec ce nom et cette adresse existe déjà',
+          error: 'Conflict',
+          timestamp: '2026-03-22T14:30:00.000Z',
+          path: '/api/v1/restaurants',
+          requestId: 'c3a5e7f2-1234-4abc-9def-567890abcdef',
+        },
       },
     },
   })
@@ -296,7 +324,7 @@ export class RestaurantsV1Controller {
   // PATCH /restaurants/:id → 200 OK
   // ─────────────────────────────────────────────
 
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(AuthGuard('jwt'), RolesGuard, OwnershipGuard)
   @Roles('owner', 'admin')
   @Version('1')
@@ -326,7 +354,15 @@ export class RestaurantsV1Controller {
   })
   @ApiResponse({
     status: 400,
-    description: 'Données invalides',
+    description: 'Données invalides ou UUID mal formé',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Non autorisé (Token JWT manquant ou invalide)',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Accès refusé (pas propriétaire ou rôle insuffisant)',
   })
   @ApiResponse({
     status: 404,
@@ -360,7 +396,7 @@ export class RestaurantsV1Controller {
   // DELETE /restaurants/:id → 204 No Content
   // ─────────────────────────────────────────────
 
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin')
   @Version('1')
@@ -383,6 +419,18 @@ export class RestaurantsV1Controller {
   @ApiResponse({
     status: 204,
     description: 'Restaurant soft-deleted avec succès',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'UUID invalide (format incorrect)',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Non autorisé (Token JWT manquant ou invalide)',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Accès refusé (rôle admin requis)',
   })
   @ApiResponse({
     status: 404,

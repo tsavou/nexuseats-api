@@ -43,6 +43,14 @@ export class OrdersGatewayController {
     type: OrderResponseDto,
   })
   @ApiResponse({
+    status: 400,
+    description: 'Données invalides (payload incorrect, items manquants, montant négatif).',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Trop de requêtes — rate limiting actif.',
+  })
+  @ApiResponse({
     status: 504,
     description: 'Orders Service indisponible ou timeout RabbitMQ.',
   })
@@ -93,6 +101,10 @@ export class OrdersGatewayController {
     status: 200,
     description: 'Commande trouvée.',
     type: OrderResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'UUID invalide (format incorrect).',
   })
   @ApiResponse({
     status: 404,
