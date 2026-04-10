@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "restaurants" ADD COLUMN     "delivery_radius" DOUBLE PRECISION NOT NULL DEFAULT 5,
+ADD COLUMN     "latitude" DOUBLE PRECISION DEFAULT 0,
+ADD COLUMN     "longitude" DOUBLE PRECISION DEFAULT 0;

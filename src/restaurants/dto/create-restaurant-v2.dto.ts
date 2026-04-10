@@ -15,7 +15,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CuisineType } from '@prisma/client';
-import { AddressDto } from './address.dto';
+import { LocationDto } from './location.dto';
 import { IsOpeningHoursValid } from '../validators/is-opening-hours-valid.validator';
 import { OpeningHourDto } from './opening-hour.dto';
 
@@ -42,13 +42,13 @@ export class CreateRestaurantV2Dto {
   name: string;
 
   @ApiProperty({
-    type: () => AddressDto,
-    description: 'Adresse complète du restaurant',
+    type: () => LocationDto,
+    description: 'Localisation complète du restaurant (adresse + coordonnées)',
   })
   @ValidateNested()
-  @Type(() => AddressDto)
-  @IsNotEmpty({ message: "L'adresse est obligatoire" })
-  address: AddressDto;
+  @Type(() => LocationDto)
+  @IsNotEmpty({ message: "La localisation est obligatoire" })
+  location: LocationDto;
 
   @ApiProperty({
     description: 'Type de cuisine proposée',
@@ -83,6 +83,17 @@ export class CreateRestaurantV2Dto {
   @Min(1, { message: 'Le prix minimum est 1€' })
   @Max(500)
   averagePrice: number;
+
+  @ApiProperty({
+    description: 'Rayon de livraison en kilomètres',
+    example: 5,
+    minimum: 1,
+    maximum: 100,
+  })
+  @IsNumber({}, { message: 'Le rayon doit être un nombre' })
+  @Min(1)
+  @Max(100)
+  deliveryRadius: number;
 
   @ApiProperty({ example: '+33', description: 'Indicatif pays' })
   @IsString()

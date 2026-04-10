@@ -28,6 +28,9 @@ export class RestaurantsService {
     'countryCode',
     'localNumber',
     'description',
+    'latitude',
+    'longitude',
+    'deliveryRadius',
     'isOpen',
     'ownerId',
     'createdAt',
@@ -94,9 +97,7 @@ export class RestaurantsService {
     const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
 
     const result = {
-      data: restaurants.map((restaurant) =>
-        this.toRestaurantResponse(restaurant, fieldSelection.responseFields),
-      ),
+      data: restaurants,
       meta: {
         total,
         page,
@@ -140,7 +141,7 @@ export class RestaurantsService {
       : null;
 
     return {
-      data: pageItems.map((restaurant) => this.toRestaurantResponse(restaurant)),
+      data: pageItems,
       meta: {
         nextCursor,
         hasNext,
@@ -203,8 +204,7 @@ export class RestaurantsService {
     }
 
     const result = {
-      ...this.toRestaurantResponse(restaurant),
-      menus: restaurant.menus,
+      ...restaurant,
     };
 
     // 3. Stocker en cache avec TTL 10 min
@@ -255,7 +255,7 @@ export class RestaurantsService {
     // Invalider toutes les clés de liste
     await this.invalidateListCache();
 
-    return this.toRestaurantResponse(restaurant);
+    return restaurant;
   }
 
   // ─────────────────────────────────────────────
@@ -274,7 +274,7 @@ export class RestaurantsService {
     await this.invalidateDetailCache(id);
     await this.invalidateListCache();
 
-    return this.toRestaurantResponse(restaurant);
+    return restaurant;
   }
 
   // ─────────────────────────────────────────────
@@ -381,9 +381,10 @@ export class RestaurantsService {
         case 'rating':
         case 'averagePrice':
         case 'phoneNumber':
-        case 'countryCode':
-        case 'localNumber':
         case 'description':
+        case 'latitude':
+        case 'longitude':
+        case 'deliveryRadius':
         case 'isOpen':
         case 'ownerId':
         case 'createdAt':
@@ -469,23 +470,21 @@ export class RestaurantsService {
     if (shouldInclude('id')) response.id = restaurant.id;
     if (shouldInclude('name')) response.name = restaurant.name;
     if (shouldInclude('address')) {
-      response.address = `${restaurant.street}, ${restaurant.zipCode} ${restaurant.city}, ${restaurant.country}`;
+      response.address = {
+        street: restaurant.street,
+        city: restaurant.city,
+        zipCode: restaurant.zipCode,
+        country: restaurant.country,
+      };
     }
     if (shouldInclude('cuisine')) response.cuisine = restaurant.cuisineType;
-    if (shouldInclude('cuisineType'))
-      response.cuisineType = restaurant.cuisineType;
     if (shouldInclude('rating')) response.rating = restaurant.rating;
     if (shouldInclude('averagePrice'))
       response.averagePrice = restaurant.averagePrice;
     if (shouldInclude('phoneNumber') && restaurant.phoneNumber !== undefined) {
       response.phoneNumber = restaurant.phoneNumber ?? undefined;
     }
-    if (shouldInclude('countryCode') && restaurant.countryCode !== undefined) {
-      response.countryCode = restaurant.countryCode ?? undefined;
-    }
-    if (shouldInclude('localNumber') && restaurant.localNumber !== undefined) {
-      response.localNumber = restaurant.localNumber ?? undefined;
-    }
+
     if (shouldInclude('description') && restaurant.description !== undefined) {
       response.description = restaurant.description ?? undefined;
     }
@@ -495,5 +494,32 @@ export class RestaurantsService {
     if (shouldInclude('updatedAt')) response.updatedAt = restaurant.updatedAt;
 
     return response;
+  }
+
+  /**
+   * Format de réponse V1 :
+   * Réponse de base avec address comme objet { street, city, zipCode, country }
+   */
+  toV1Response(restaurant: any) {
+    return this.toRestaurantResponse(restaurant);
+  }
+
+  /**
+   * Format de réponse V2 :
+   * Réponse de base + location { address, coordinates } + deliveryRadius
+   */
+  toV2Response(restaurant: any) {
+    const { address, ...base } = this.toRestaurantResponse(restaurant);
+    return {
+      ...base,
+      location: {
+        address,
+        coordinates: {
+          lat: restaurant.latitude ?? 0,
+          lng: restaurant.longitude ?? 0,
+        },
+      },
+      deliveryRadius: restaurant.deliveryRadius ?? 5,
+    };
   }
 }

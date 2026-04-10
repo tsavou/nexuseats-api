@@ -22,7 +22,8 @@ import { Prisma } from '@prisma/client';
 import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantV2Dto } from './dto/create-restaurant-v2.dto';
 import { UpdateRestaurantV2Dto } from './dto/update-restaurant-v2.dto';
-import { Restaurant } from './entities/restaurant.entity';
+import { RestaurantV2ResponseDto } from './dto/restaurant-v2-response.dto';
+import { PaginatedRestaurantV2ResponseDto } from './dto/paginated-restaurant-v2-response.dto';
 import { FindRestaurantsQueryDto } from './dto/find-restaurants-query.dto';
 import { ScrollRestaurantsQueryDto } from './dto/scroll-restaurants-query.dto';
 import {
@@ -107,37 +108,14 @@ export class RestaurantsV2Controller {
   @ApiResponse({
     status: 200,
     description: 'Liste paginée retournée avec succès',
-    schema: {
-      example: {
-        data: [
-          {
-            id: 'a1b2c3d4-...',
-            name: 'La Bella Italia',
-            address: '12 rue de la Paix, 75002 Paris',
-            cuisineType: 'ITALIENNE',
-            rating: 4.2,
-            averagePrice: 25,
-            countryCode: '+33',
-            localNumber: '612345678',
-            description: 'Restaurant italien authentique au coeur de Paris',
-            isOpen: true,
-            createdAt: '2026-02-27T13:00:00.000Z',
-            updatedAt: '2026-02-27T13:00:00.000Z',
-          },
-        ],
-        meta: {
-          total: 3,
-          page: 1,
-          limit: 20,
-          totalPages: 1,
-          hasNext: false,
-          hasPrevious: false,
-        },
-      },
-    },
+    type: PaginatedRestaurantV2ResponseDto,
   })
-  findAll(@Query() query: FindRestaurantsQueryDto) {
-    return this.restaurantsService.findAll(query);
+  async findAll(@Query() query: FindRestaurantsQueryDto) {
+    const result = await this.restaurantsService.findAll(query) as any;
+    return {
+      ...result,
+      data: (result.data ?? []).map((r: any) => this.restaurantsService.toV2Response(r)),
+    };
   }
 
   // ─────────────────────────────────────────────
@@ -196,8 +174,8 @@ export class RestaurantsV2Controller {
   })
   @ApiResponse({
     status: 200,
-    description: 'Restaurant trouvé',
-    type: Restaurant,
+    description: 'Restaurant trouvé (format v2 enrichi avec location + coordinates)',
+    type: RestaurantV2ResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -220,8 +198,9 @@ export class RestaurantsV2Controller {
       },
     },
   })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.restaurantsService.findOne(id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const restaurant = await this.restaurantsService.findOne(id) as any;
+    return this.restaurantsService.toV2Response(restaurant);
   }
 
   // ─────────────────────────────────────────────
@@ -245,7 +224,7 @@ export class RestaurantsV2Controller {
   @ApiResponse({
     status: 201,
     description: 'Restaurant créé avec succès',
-    type: Restaurant,
+    type: RestaurantV2ResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -292,23 +271,26 @@ export class RestaurantsV2Controller {
       },
     },
   })
-  create(@Body() dto: CreateRestaurantV2Dto, @CurrentUser() user: any) {
+  async create(@Body() dto: CreateRestaurantV2Dto, @CurrentUser() user: any) {
     const data: Prisma.RestaurantUncheckedCreateInput = {
       name: dto.name,
-      street: dto.address.street,
-      city: dto.address.city,
-      zipCode: dto.address.zipCode,
-      country: dto.address.country,
+      street: dto.location.address.street,
+      city: dto.location.address.city,
+      zipCode: dto.location.address.zipCode,
+      country: dto.location.address.country,
+      latitude: dto.location.coordinates.lat,
+      longitude: dto.location.coordinates.lng,
+      deliveryRadius: dto.deliveryRadius,
       cuisineType: dto.cuisine,
       rating: dto.rating ?? 0,
       averagePrice: dto.averagePrice,
-      countryCode: dto.countryCode,
-      localNumber: dto.localNumber,
+      phoneNumber: `${dto.countryCode} ${dto.localNumber}`,
       description: dto.description,
       ownerId: user.id,
     };
 
-    return this.restaurantsService.create(data);
+    const restaurant = await this.restaurantsService.create(data);
+    return this.restaurantsService.toV2Response(restaurant);
   }
 
   // ─────────────────────────────────────────────
@@ -340,7 +322,7 @@ export class RestaurantsV2Controller {
   @ApiResponse({
     status: 200,
     description: 'Restaurant mis à jour',
-    type: Restaurant,
+    type: RestaurantV2ResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -358,7 +340,7 @@ export class RestaurantsV2Controller {
     status: 404,
     description: 'Restaurant introuvable',
   })
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateRestaurantV2Dto,
   ) {
@@ -366,21 +348,31 @@ export class RestaurantsV2Controller {
 
     if (dto.name !== undefined) data.name = dto.name;
 
-    if (dto.address !== undefined) {
-      data.street = dto.address.street;
-      data.city = dto.address.city;
-      data.zipCode = dto.address.zipCode;
-      data.country = dto.address.country;
+    if (dto.location) {
+      if (dto.location.address) {
+        data.street = dto.location.address.street;
+        data.city = dto.location.address.city;
+        data.zipCode = dto.location.address.zipCode;
+        data.country = dto.location.address.country;
+      }
+      if (dto.location.coordinates) {
+        data.latitude = dto.location.coordinates.lat;
+        data.longitude = dto.location.coordinates.lng;
+      }
     }
-
+    if (dto.deliveryRadius !== undefined) data.deliveryRadius = dto.deliveryRadius;
     if (dto.cuisine !== undefined) data.cuisineType = dto.cuisine;
     if (dto.rating !== undefined) data.rating = dto.rating;
     if (dto.averagePrice !== undefined) data.averagePrice = dto.averagePrice;
-    if (dto.countryCode !== undefined) data.countryCode = dto.countryCode;
-    if (dto.localNumber !== undefined) data.localNumber = dto.localNumber;
+    if (dto.countryCode !== undefined || dto.localNumber !== undefined) {
+      const code = dto.countryCode ?? '';
+      const num = dto.localNumber ?? '';
+      data.phoneNumber = `${code} ${num}`.trim();
+    }
     if (dto.description !== undefined) data.description = dto.description;
 
-    return this.restaurantsService.update(id, data);
+    const restaurant = await this.restaurantsService.update(id, data);
+    return this.restaurantsService.toV2Response(restaurant);
   }
 
   // ─────────────────────────────────────────────

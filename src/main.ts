@@ -64,11 +64,11 @@ async function bootstrapWorker() {
     .addTag('auth', '🔐 Authentification JWT — inscription, connexion, profil')
     .addTag(
       'restaurants-v2',
-      '✅ [CURRENT] CRUD restaurants avec countryCode/localNumber',
+      '🟢 [CURRENT] CRUD restaurants enrichis (location GPS + rayon de livraison)',
     )
     .addTag(
       'restaurants-v1',
-      '⚠️ [DEPRECATED] CRUD restaurants avec phoneNumber global',
+      '⚠️ [LEGACY] CRUD restaurants classique (format address plat, sans GPS)',
     )
     .addTag('menus', '📋 Gestion des menus rattachés aux restaurants')
     .addTag('menu-items', '🍕 Gestion des items de menu et catégories')

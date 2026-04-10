@@ -30,10 +30,12 @@ model Restaurant {
   rating       Float       @default(0)
   averagePrice Float       @map("average_price")
   phoneNumber  String?     @map("phone_number")
-  countryCode  String?     @map("country_code")
-  localNumber  String?     @map("local_number")
-  description  String?
-  isOpen       Boolean     @default(true) @map("is_open")
+
+  description    String?
+  latitude       Float?      @default(0)
+  longitude      Float?      @default(0)
+  deliveryRadius Float       @default(5) @map("delivery_radius")
+  isOpen         Boolean     @default(true) @map("is_open")
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
   deletedAt    DateTime?   @map("deleted_at")

@@ -23,7 +23,8 @@ import { Prisma } from '@prisma/client';
 import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantDto } from './dto/create-restaurant-v1.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant-v1.dto';
-import { Restaurant } from './entities/restaurant.entity';
+import { RestaurantV1ResponseDto } from './dto/restaurant-v1-response.dto';
+import { PaginatedRestaurantV1ResponseDto } from './dto/paginated-restaurant-v1-response.dto';
 import { FindRestaurantsQueryDto } from './dto/find-restaurants-query.dto';
 import { ScrollRestaurantsQueryDto } from './dto/scroll-restaurants-query.dto';
 import {
@@ -110,36 +111,14 @@ export class RestaurantsV1Controller {
   @ApiResponse({
     status: 200,
     description: 'Liste paginée retournée avec succès',
-    schema: {
-      example: {
-        data: [
-          {
-            id: 'a1b2c3d4-...',
-            name: 'La Bella Italia',
-            address: '12 rue de la Paix, 75002 Paris',
-            cuisineType: 'ITALIENNE',
-            rating: 4.2,
-            averagePrice: 25,
-            phoneNumber: '+33612345678',
-            description: 'Restaurant italien authentique au coeur de Paris',
-            isOpen: true,
-            createdAt: '2026-02-27T13:00:00.000Z',
-            updatedAt: '2026-02-27T13:00:00.000Z',
-          },
-        ],
-        meta: {
-          total: 3,
-          page: 1,
-          limit: 20,
-          totalPages: 1,
-          hasNext: false,
-          hasPrevious: false,
-        },
-      },
-    },
+    type: PaginatedRestaurantV1ResponseDto,
   })
-  findAll(@Query() query: FindRestaurantsQueryDto) {
-    return this.restaurantsService.findAll(query);
+  async findAll(@Query() query: FindRestaurantsQueryDto) {
+    const result = await this.restaurantsService.findAll(query) as any;
+    return {
+      ...result,
+      data: (result.data ?? []).map((r: any) => this.restaurantsService.toV1Response(r)),
+    };
   }
 
   // ─────────────────────────────────────────────
@@ -205,8 +184,8 @@ export class RestaurantsV1Controller {
   })
   @ApiResponse({
     status: 200,
-    description: 'Restaurant trouvé',
-    type: Restaurant,
+    description: 'Restaurant trouvé (format v1)',
+    type: RestaurantV1ResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -229,8 +208,9 @@ export class RestaurantsV1Controller {
       },
     },
   })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.restaurantsService.findOne(id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const restaurant = await this.restaurantsService.findOne(id) as any;
+    return this.restaurantsService.toV1Response(restaurant);
   }
 
   // ─────────────────────────────────────────────
@@ -255,7 +235,7 @@ export class RestaurantsV1Controller {
   @ApiResponse({
     status: 201,
     description: 'Restaurant créé avec succès',
-    type: Restaurant,
+    type: RestaurantV1ResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -302,7 +282,7 @@ export class RestaurantsV1Controller {
       },
     },
   })
-  create(@Body() dto: CreateRestaurantDto, @CurrentUser() user: any) {
+  async create(@Body() dto: CreateRestaurantDto, @CurrentUser() user: any) {
     const data: Prisma.RestaurantUncheckedCreateInput = {
       name: dto.name,
       street: dto.address.street,
@@ -317,7 +297,8 @@ export class RestaurantsV1Controller {
       ownerId: user.id,
     };
 
-    return this.restaurantsService.create(data);
+    const restaurant = await this.restaurantsService.create(data);
+    return this.restaurantsService.toV1Response(restaurant);
   }
 
   // ─────────────────────────────────────────────
@@ -350,7 +331,7 @@ export class RestaurantsV1Controller {
   @ApiResponse({
     status: 200,
     description: 'Restaurant mis à jour',
-    type: Restaurant,
+    type: RestaurantV1ResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -368,7 +349,7 @@ export class RestaurantsV1Controller {
     status: 404,
     description: 'Restaurant introuvable',
   })
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateRestaurantDto,
   ) {
@@ -389,7 +370,8 @@ export class RestaurantsV1Controller {
     if (dto.phone !== undefined) data.phoneNumber = dto.phone;
     if (dto.description !== undefined) data.description = dto.description;
 
-    return this.restaurantsService.update(id, data);
+    const restaurant = await this.restaurantsService.update(id, data);
+    return this.restaurantsService.toV1Response(restaurant);
   }
 
   // ─────────────────────────────────────────────
