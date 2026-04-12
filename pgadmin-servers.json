@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "NexusEats Production",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "nexuseats",
+      "Username": "nexuseats",
+      "PassFile": "/pgadmin4/pgpass",
+      "SSLMode": "prefer"
+    }
+  }
+}
