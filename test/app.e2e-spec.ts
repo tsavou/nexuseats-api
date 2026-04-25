@@ -252,14 +252,24 @@ describe('NexusEats API (e2e)', () => {
 
     const buildRestaurantPayload = (name: string) => ({
       name,
-      street: '10 rue des Tests',
-      city: 'Paris',
-      zipCode: '75010',
-      country: 'France',
-      cuisineType: 'ITALIENNE',
+      location: {
+        address: {
+          street: '10 rue des Tests',
+          city: 'Paris',
+          zipCode: '75010',
+          country: 'FR',
+        },
+        coordinates: {
+          lat: 48.8,
+          lng: 2.3,
+        },
+      },
+      deliveryRadius: 5,
+      cuisine: 'ITALIENNE',
       rating: 4.5,
       averagePrice: 22,
-      email: 'contact@test-ristorante.fr',
+      countryCode: '+33',
+      localNumber: '612345678',
       description: 'Restaurant de test e2e',
     });
 
@@ -289,6 +299,7 @@ describe('NexusEats API (e2e)', () => {
 
     beforeAll(async () => {
       const uniqueSeed = Date.now();
+      await new Promise((r) => setTimeout(r, 1100)); // Bypass ThrottlerGuard (10 req/s limit)
       ownerToken = await registerAndLogin(
         'owner',
         `owner-${uniqueSeed}@nexus.test`,
@@ -340,8 +351,12 @@ describe('NexusEats API (e2e)', () => {
             id: expect.any(String),
             name: payload.name,
             ownerId: expect.any(Number),
-            street: '10 rue des Tests',
-            city: 'Paris',
+            location: expect.objectContaining({
+              address: expect.objectContaining({
+                street: '10 rue des Tests',
+                city: 'Paris',
+              }),
+            }),
           }),
         }),
       );
