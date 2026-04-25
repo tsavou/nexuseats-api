@@ -29,8 +29,11 @@ describe('Restaurant consumer contract', () => {
           data: like({
             id: uuid(restaurantId),
             name: like('La Bella Italia'),
-            cuisine: like('ITALIENNE'),
-            address: like('12 rue de la Paix, 75002 Paris, FR'),
+            cuisineType: like('ITALIENNE'),
+            street: like('12 rue de la Paix'),
+            city: like('Paris'),
+            zipCode: like('75002'),
+            country: like('France'),
             menus: eachLike(
               like({
                 id: uuid('22222222-2222-4222-8222-222222222222'),
@@ -56,8 +59,8 @@ describe('Restaurant consumer contract', () => {
       expect(body.success).toBe(true);
       expect(body.data.id).toBe(restaurantId);
       expect(body.data.name).toBe('La Bella Italia');
-      expect(body.data.cuisine).toBe('ITALIENNE');
-      expect(body.data.address).toContain('Paris');
+      expect(body.data.cuisineType).toBe('ITALIENNE');
+      expect(body.data.city).toBe('Paris');
       expect(body.data.menus).toHaveLength(1);
     });
   });

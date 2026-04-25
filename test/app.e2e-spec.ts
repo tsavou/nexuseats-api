@@ -252,17 +252,13 @@ describe('NexusEats API (e2e)', () => {
 
     const buildRestaurantPayload = (name: string) => ({
       name,
-      address: {
-        street: '10 rue des Tests',
-        city: 'Paris',
-        zipCode: '75010',
-        country: 'FR',
-      },
-      cuisine: 'ITALIENNE',
+      street: '10 rue des Tests',
+      city: 'Paris',
+      zipCode: '75010',
+      country: 'France',
+      cuisineType: 'ITALIENNE',
       rating: 4.5,
       averagePrice: 22,
-      countryCode: '+33',
-      localNumber: '612345678',
       email: 'contact@test-ristorante.fr',
       description: 'Restaurant de test e2e',
     });
@@ -344,7 +340,8 @@ describe('NexusEats API (e2e)', () => {
             id: expect.any(String),
             name: payload.name,
             ownerId: expect.any(Number),
-            address: '10 rue des Tests, 75010 Paris, FR',
+            street: '10 rue des Tests',
+            city: 'Paris',
           }),
         }),
       );

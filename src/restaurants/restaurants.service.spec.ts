@@ -22,8 +22,9 @@ describe('RestaurantsService', () => {
     rating: true,
     averagePrice: true,
     phoneNumber: true,
-    countryCode: true,
-    localNumber: true,
+    latitude: true,
+    longitude: true,
+    deliveryRadius: true,
     description: true,
     isOpen: true,
     ownerId: true,
@@ -42,8 +43,9 @@ describe('RestaurantsService', () => {
     rating: 4.7,
     averagePrice: 22,
     phoneNumber: '0102030405',
-    countryCode: '+33',
-    localNumber: '102030405',
+    latitude: null,
+    longitude: null,
+    deliveryRadius: null,
     description: 'Fresh pasta daily',
     isOpen: true,
     ownerId: 9,
@@ -52,23 +54,7 @@ describe('RestaurantsService', () => {
     deletedAt: null,
   };
 
-  const restaurantResponse = {
-    id: restaurant.id,
-    name: restaurant.name,
-    address: `${restaurant.street}, ${restaurant.zipCode} ${restaurant.city}, ${restaurant.country}`,
-    cuisine: restaurant.cuisineType,
-    cuisineType: restaurant.cuisineType,
-    rating: restaurant.rating,
-    averagePrice: restaurant.averagePrice,
-    phoneNumber: restaurant.phoneNumber,
-    countryCode: restaurant.countryCode,
-    localNumber: restaurant.localNumber,
-    description: restaurant.description,
-    isOpen: restaurant.isOpen,
-    ownerId: restaurant.ownerId,
-    createdAt: restaurant.createdAt,
-    updatedAt: restaurant.updatedAt,
-  };
+  const restaurantResponse = { ...restaurant };
 
   const prismaMock = {
     $transaction: jest.fn(),
@@ -237,7 +223,7 @@ describe('RestaurantsService', () => {
     const result = await service.findAll({
       page: 1,
       limit: 20,
-      fields: 'id,name,cuisine,rating',
+      fields: 'id,name,cuisineType,rating',
     });
 
     expect(prismaMock.restaurant.findMany).toHaveBeenCalledWith({
@@ -253,7 +239,7 @@ describe('RestaurantsService', () => {
       },
     });
     expect(cacheManagerMock.set).toHaveBeenCalledWith(
-      'restaurants:list:{"page":1,"limit":20,"fields":["cuisine","id","name","rating"]}',
+      'restaurants:list:{"page":1,"limit":20,"fields":["cuisineType","id","name","rating"]}',
       result,
       300000,
     );
@@ -262,7 +248,7 @@ describe('RestaurantsService', () => {
         {
           id: restaurant.id,
           name: restaurant.name,
-          cuisine: restaurant.cuisineType,
+          cuisineType: restaurant.cuisineType,
           rating: restaurant.rating,
         },
       ],

@@ -62,8 +62,6 @@ describe('Restaurant provider verification', () => {
                 cuisineType: CuisineType.ITALIENNE,
                 rating: 4.6,
                 averagePrice: 25,
-                countryCode: '+33',
-                localNumber: '612345678',
                 description: 'Restaurant italien authentique au coeur de Paris',
                 ownerId: owner.id,
                 menus: {
