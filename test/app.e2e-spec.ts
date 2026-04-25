@@ -270,6 +270,7 @@ describe('NexusEats API (e2e)', () => {
       averagePrice: 22,
       countryCode: '+33',
       localNumber: '612345678',
+      email: 'contact@test-ristorante.fr',
       description: 'Restaurant de test e2e',
     });
 
