@@ -8,6 +8,7 @@ import * as compression from 'compression';
 import { availableParallelism } from 'node:os';
 import type { Cluster, Worker } from 'cluster';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const cluster: Cluster = require('cluster');
 
 async function bootstrapWorker() {
@@ -73,7 +74,7 @@ async function bootstrapWorker() {
     .addTag('menus', '📋 Gestion des menus rattachés aux restaurants')
     .addTag('menu-items', '🍕 Gestion des items de menu et catégories')
     .addTag('orders', '📦 Commandes via le gateway RabbitMQ')
-    .addTag('health', '💚 Santé de l\'application et métriques')
+    .addTag('health', "💚 Santé de l'application et métriques")
     .addBearerAuth(
       {
         type: 'http',

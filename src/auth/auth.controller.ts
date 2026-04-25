@@ -34,7 +34,7 @@ export class AuthController {
   @ApiOperation({
     summary: "Inscription d'un nouvel utilisateur",
     description:
-      "Crée un compte utilisateur avec email/mot de passe et retourne un token JWT. " +
+      'Crée un compte utilisateur avec email/mot de passe et retourne un token JWT. ' +
       "Le rôle par défaut est 'customer'. Les rôles autorisés sont 'customer' et 'owner'.",
   })
   @ApiBody({ type: RegisterDto })
@@ -49,7 +49,8 @@ export class AuthController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Données invalides (email mal formé, mot de passe trop court).',
+    description:
+      'Données invalides (email mal formé, mot de passe trop court).',
     schema: {
       example: {
         success: false,
@@ -103,8 +104,8 @@ export class AuthController {
   @ApiOperation({
     summary: "Connexion d'un utilisateur",
     description:
-      "Authentifie un utilisateur par email/mot de passe et retourne un token JWT. " +
-      "Ce endpoint est limité à 3 requêtes par seconde (rate limiting renforcé).",
+      'Authentifie un utilisateur par email/mot de passe et retourne un token JWT. ' +
+      'Ce endpoint est limité à 3 requêtes par seconde (rate limiting renforcé).',
   })
   @ApiBody({ type: LoginDto })
   @ApiResponse({
@@ -157,8 +158,8 @@ export class AuthController {
   @ApiOperation({
     summary: "Récupérer le profil de l'utilisateur connecté",
     description:
-      "Retourne les informations du profil utilisateur associé au token JWT fourni. " +
-      "Nécessite un token valide dans le header Authorization.",
+      'Retourne les informations du profil utilisateur associé au token JWT fourni. ' +
+      'Nécessite un token valide dans le header Authorization.',
   })
   @ApiResponse({
     status: 200,
@@ -192,4 +193,3 @@ export class AuthController {
     return req.user;
   }
 }
-

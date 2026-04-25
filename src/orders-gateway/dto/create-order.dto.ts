@@ -19,7 +19,7 @@ export class CreateOrderItemDto {
   menuItemId!: string;
 
   @ApiProperty({
-    description: "Quantité commandée pour cet item",
+    description: 'Quantité commandée pour cet item',
     example: 2,
     minimum: 1,
   })

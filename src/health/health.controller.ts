@@ -112,10 +112,10 @@ export class HealthController {
   @SkipTransform()
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
-    summary: "Métriques du processus Node.js",
+    summary: 'Métriques du processus Node.js',
     description:
-      "Retourne les métriques système du processus : uptime, mémoire, CPU. " +
-      "Réservé aux administrateurs uniquement.",
+      'Retourne les métriques système du processus : uptime, mémoire, CPU. ' +
+      'Réservé aux administrateurs uniquement.',
   })
   @ApiResponse({
     status: 200,
@@ -166,11 +166,9 @@ export class HealthController {
       throw new HealthCheckError(
         'Redis ping failed',
         indicator.down({
-          message:
-            error instanceof Error ? error.message : 'Redis ping failed',
+          message: error instanceof Error ? error.message : 'Redis ping failed',
         }),
       );
     }
   }
 }
-

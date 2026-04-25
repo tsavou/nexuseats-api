@@ -111,10 +111,12 @@ export class RestaurantsV2Controller {
     type: PaginatedRestaurantV2ResponseDto,
   })
   async findAll(@Query() query: FindRestaurantsQueryDto) {
-    const result = await this.restaurantsService.findAll(query) as any;
+    const result = (await this.restaurantsService.findAll(query)) as any;
     return {
       ...result,
-      data: (result.data ?? []).map((r: any) => this.restaurantsService.toV2Response(r)),
+      data: (result.data ?? []).map((r: any) =>
+        this.restaurantsService.toV2Response(r),
+      ),
     };
   }
 
@@ -174,7 +176,8 @@ export class RestaurantsV2Controller {
   })
   @ApiResponse({
     status: 200,
-    description: 'Restaurant trouvé (format v2 enrichi avec location + coordinates)',
+    description:
+      'Restaurant trouvé (format v2 enrichi avec location + coordinates)',
     type: RestaurantV2ResponseDto,
   })
   @ApiResponse({
@@ -199,7 +202,7 @@ export class RestaurantsV2Controller {
     },
   })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const restaurant = await this.restaurantsService.findOne(id) as any;
+    const restaurant = (await this.restaurantsService.findOne(id)) as any;
     return this.restaurantsService.toV2Response(restaurant);
   }
 
@@ -334,7 +337,8 @@ export class RestaurantsV2Controller {
   })
   @ApiResponse({
     status: 403,
-    description: 'Accès refusé (pas propriétaire du restaurant ou rôle insuffisant)',
+    description:
+      'Accès refusé (pas propriétaire du restaurant ou rôle insuffisant)',
   })
   @ApiResponse({
     status: 404,
@@ -360,7 +364,8 @@ export class RestaurantsV2Controller {
         data.longitude = dto.location.coordinates.lng;
       }
     }
-    if (dto.deliveryRadius !== undefined) data.deliveryRadius = dto.deliveryRadius;
+    if (dto.deliveryRadius !== undefined)
+      data.deliveryRadius = dto.deliveryRadius;
     if (dto.cuisine !== undefined) data.cuisineType = dto.cuisine;
     if (dto.rating !== undefined) data.rating = dto.rating;
     if (dto.averagePrice !== undefined) data.averagePrice = dto.averagePrice;

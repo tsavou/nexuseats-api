@@ -11,7 +11,8 @@ import { OrdersGatewayService } from './orders-gateway.service';
         transport: Transport.RMQ,
         options: {
           urls: [
-            process.env.RABBITMQ_URL ?? 'amqp://nexuseats:secret@localhost:5672',
+            process.env.RABBITMQ_URL ??
+              'amqp://nexuseats:secret@localhost:5672',
           ],
           queue: 'orders_queue',
           queueOptions: {

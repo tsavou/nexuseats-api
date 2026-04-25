@@ -23,7 +23,7 @@ export class MetricsInterceptor implements NestInterceptor {
   private getRouteKey(request: any) {
     const path = request.route?.path
       ? `${request.baseUrl ?? ''}${request.route.path}`
-      : request.originalUrl?.split('?')[0] ?? request.url;
+      : (request.originalUrl?.split('?')[0] ?? request.url);
 
     return `${request.method} ${path}`;
   }

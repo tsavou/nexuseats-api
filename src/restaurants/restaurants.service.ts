@@ -137,7 +137,7 @@ export class RestaurantsService {
     const hasNext = restaurants.length > limit;
     const pageItems = hasNext ? restaurants.slice(0, limit) : restaurants;
     const nextCursor = hasNext
-      ? pageItems[pageItems.length - 1]?.id ?? null
+      ? (pageItems[pageItems.length - 1]?.id ?? null)
       : null;
 
     return {
@@ -420,8 +420,9 @@ export class RestaurantsService {
       return null;
     }
 
-    const requestedFields = [...new Set(fields.split(',').map((field) => field.trim()))]
-      .filter(Boolean);
+    const requestedFields = [
+      ...new Set(fields.split(',').map((field) => field.trim())),
+    ].filter(Boolean);
 
     if (requestedFields.length === 0) {
       return null;

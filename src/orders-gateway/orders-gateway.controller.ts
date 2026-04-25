@@ -44,7 +44,8 @@ export class OrdersGatewayController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Données invalides (payload incorrect, items manquants, montant négatif).',
+    description:
+      'Données invalides (payload incorrect, items manquants, montant négatif).',
   })
   @ApiResponse({
     status: 429,

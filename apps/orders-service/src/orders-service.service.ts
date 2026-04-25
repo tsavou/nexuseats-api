@@ -52,7 +52,9 @@ export class OrdersServiceService {
   }
 
   findAll() {
-    this.logger.log(`Received get_orders, returning ${this.orders.length} order(s)`);
+    this.logger.log(
+      `Received get_orders, returning ${this.orders.length} order(s)`,
+    );
     return this.orders;
   }
 

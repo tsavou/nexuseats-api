@@ -10,7 +10,10 @@ import {
 } from 'class-validator';
 
 export class UpdateMenuItemDto {
-  @ApiPropertyOptional({ description: "Nom de l'item", example: 'Pizza Margherita XL' })
+  @ApiPropertyOptional({
+    description: "Nom de l'item",
+    example: 'Pizza Margherita XL',
+  })
   @IsOptional()
   @IsString()
   @MinLength(2)

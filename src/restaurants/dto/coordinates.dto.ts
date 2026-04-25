@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, Min, Max, IsOptional } from 'class-validator';
+import { IsNumber, Min, Max } from 'class-validator';
 
 /**
  * DTO pour les coordonnées GPS d'un restaurant (v2).

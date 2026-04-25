@@ -7,7 +7,8 @@ import { PaginatedMetaDto } from '../../common/dto/paginated-meta.dto';
  */
 export class PaginatedRestaurantV2ResponseDto {
   @ApiProperty({
-    description: 'Liste des restaurants (format v2 avec location + coordinates)',
+    description:
+      'Liste des restaurants (format v2 avec location + coordinates)',
     type: [RestaurantV2ResponseDto],
   })
   data: RestaurantV2ResponseDto[];

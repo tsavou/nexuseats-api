@@ -114,10 +114,12 @@ export class RestaurantsV1Controller {
     type: PaginatedRestaurantV1ResponseDto,
   })
   async findAll(@Query() query: FindRestaurantsQueryDto) {
-    const result = await this.restaurantsService.findAll(query) as any;
+    const result = (await this.restaurantsService.findAll(query)) as any;
     return {
       ...result,
-      data: (result.data ?? []).map((r: any) => this.restaurantsService.toV1Response(r)),
+      data: (result.data ?? []).map((r: any) =>
+        this.restaurantsService.toV1Response(r),
+      ),
     };
   }
 
@@ -209,7 +211,7 @@ export class RestaurantsV1Controller {
     },
   })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const restaurant = await this.restaurantsService.findOne(id) as any;
+    const restaurant = (await this.restaurantsService.findOne(id)) as any;
     return this.restaurantsService.toV1Response(restaurant);
   }
 

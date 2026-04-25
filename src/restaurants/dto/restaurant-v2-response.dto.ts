@@ -68,10 +68,6 @@ export class RestaurantV2ResponseDto {
   })
   phoneNumber?: string;
 
-
-
-
-
   @ApiPropertyOptional({
     description: 'Description courte du restaurant',
     example: 'Restaurant italien authentique au coeur de Paris',

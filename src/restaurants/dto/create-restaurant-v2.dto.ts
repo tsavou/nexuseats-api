@@ -47,7 +47,7 @@ export class CreateRestaurantV2Dto {
   })
   @ValidateNested()
   @Type(() => LocationDto)
-  @IsNotEmpty({ message: "La localisation est obligatoire" })
+  @IsNotEmpty({ message: 'La localisation est obligatoire' })
   location: LocationDto;
 
   @ApiProperty({

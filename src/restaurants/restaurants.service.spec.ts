@@ -468,7 +468,9 @@ describe('RestaurantsService', () => {
   });
 
   it('create throws ConflictException when the same name and address already exist', async () => {
-    prismaMock.restaurant.findFirst.mockResolvedValueOnce({ id: restaurant.id });
+    prismaMock.restaurant.findFirst.mockResolvedValueOnce({
+      id: restaurant.id,
+    });
 
     await expect(
       service.create({
