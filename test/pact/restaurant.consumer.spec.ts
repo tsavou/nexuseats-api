@@ -1,7 +1,7 @@
 import { PactV3, MatchersV3 } from '@pact-foundation/pact';
 import * as path from 'node:path';
 
-const { like, eachLike, uuid, timestamp } = MatchersV3;
+const { like, uuid, timestamp } = MatchersV3;
 
 describe('Restaurant consumer contract', () => {
   const restaurantId = '11111111-1111-4111-8111-111111111111';
